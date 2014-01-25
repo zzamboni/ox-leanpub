@@ -1,0 +1,14 @@
+Small adaptation of ox-md.el to make the exported markdown work
+better for Leanpub (http://leanpub.com) publication.  It handles
+footnotes, and makes source code separated from its output, and
+the output does not display line numbers.  Html blocks are
+ignored.
+
+Missing:
+
+- Tables should appear just as they are in org-mode.  Currently
+  they are ignored.
+- When using IDs for cross linking they should be taken advantage
+  of.  Leanpub's markdown is supposed to be able to crosslink with
+  ids.
+
