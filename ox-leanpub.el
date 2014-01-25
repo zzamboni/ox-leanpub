@@ -38,15 +38,30 @@
 	      (if a (org-leanpub-export-to-markdown t s v)
 		(org-open-file (org-leanpub-export-to-markdown nil s v)))))))
   :translate-alist '((fixed-width . org-leanpub-fixed-width-block)
+                     (example-block . org-leanpub-fixed-width-block)
                      (src-block . org-leanpub-src-block)
                      (plain-text . org-leanpub-plain-text)
                      (inner-template . org-leanpub-inner-template)
                      (footnote-reference . org-leanpub-footnote-reference)
                      (headline . org-leanpub-headline)
+                     (link . org-leanpub-link)
+                     (latex-fragment . org-leanpub-latex-fragment)
                      (table . org-leanpub-ignore)
                      ;; Will not work with leanpub:
                      (export-block . org-leanpub-ignore))) ; #+html
 
+
+(defun org-leanpub-latex-fragment (latex-fragment contents info)
+  "Transcode a LATEX-FRAGMENT object from Org to Markdown.
+CONTENTS is nil.  INFO is a plist holding contextual information."
+  (format "{$$}%s{/$$}"
+          ;; Need to figure out the right regular expression.  Got
+          ;; lost in the escaping.
+          (replace-regexp-in-string
+           (regexp-quote "\\[") ""
+           (replace-regexp-in-string
+            (regexp-quote "\\]") ""
+            (org-element-property :value latex-fragment)))))
 
 ;;; Adding the id, hoping to make crosslinks work at some point.
 ;;; So far it is useless.
@@ -117,6 +132,34 @@ channel."
    (format "{linenos=off}\n~~~~~~~~\n%s~~~~~~~~"
            (org-remove-indentation
             (org-element-property :value src-block)))))
+
+(defun org-leanpub-link (link contents info)
+  "Transcode LINE-BREAK object into Markdown format.
+CONTENTS is the link's description.  INFO is a plist used as
+a communication channel."
+  (let ((type (org-element-property :type link)))
+    (cond ((member type '("custom-id" "id"))
+           (let ((id (org-element-property :path link)))
+             (format "[%s](#%s)" contents id)))
+          ((org-export-inline-image-p link org-html-inline-image-rules)
+           (let ((path (let ((raw-path (org-element-property :path link)))
+                         (if (not (file-name-absolute-p raw-path)) raw-path
+                           (expand-file-name raw-path)))))
+             (format "![%s](%s)"
+                     (let ((caption (org-export-get-caption
+                                     (org-export-get-parent-element link))))
+                       (if caption
+                           (org-export-data caption info)
+                         ""))
+                     path)))
+          (t (let* ((raw-path (org-element-property :path link))
+                    (path (if (member type '("http" "https" "ftp"))
+                              (concat type ":" raw-path)
+                            nil)))
+               (if path
+                   (if (not contents) (format "<%s>" path)
+                     (format "[%s](%s)" contents path))
+                 ""))))))
 
 ;;; Interactive function
 
