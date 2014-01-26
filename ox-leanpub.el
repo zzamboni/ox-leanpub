@@ -55,13 +55,10 @@
   "Transcode a LATEX-FRAGMENT object from Org to Markdown.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (format "{$$}%s{/$$}"
-          ;; Need to figure out the right regular expression.  Got
-          ;; lost in the escaping.
+          ;; Removes the \[, \] and $ that mark latex fragments
           (replace-regexp-in-string
-           (regexp-quote "\\[") ""
-           (replace-regexp-in-string
-            (regexp-quote "\\]") ""
-            (org-element-property :value latex-fragment)))))
+           "\\\\\\[\\|\\\\\\]\\|\\$"
+           (org-element-property :value latex-fragment))))
 
 ;;; Adding the id, hoping to make crosslinks work at some point.
 ;;; So far it is useless.
@@ -159,7 +156,7 @@ a communication channel."
                (if path
                    (if (not contents) (format "<%s>" path)
                      (format "[%s](%s)" contents path))
-                 ""))))))
+                 contents))))))
 
 ;;; Interactive function
 
