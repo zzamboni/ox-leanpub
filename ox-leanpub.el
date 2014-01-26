@@ -57,7 +57,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
   (format "{$$}%s{/$$}"
           ;; Removes the \[, \] and $ that mark latex fragments
           (replace-regexp-in-string
-           "\\\\\\[\\|\\\\\\]\\|\\$"
+           "\\\\\\[\\|\\\\\\]\\|\\$" ""
            (org-element-property :value latex-fragment))))
 
 ;;; Adding the id, hoping to make crosslinks work at some point.
