@@ -9,15 +9,12 @@
 ;;; better for Leanpub (http://leanpub.com) publication.  It handles
 ;;; footnotes, and makes source code separated from its output, and
 ;;; the output does not display line numbers.  Html blocks are
-;;; ignored.
+;;; ignored.  Links with IDs work.
 
 ;;; Missing:
 
 ;;; - Tables should appear just as they are in org-mode.  Currently
 ;;;   they are ignored.
-;;; - When using IDs for cross linking they should be taken advantage
-;;;   of.  Leanpub's markdown is supposed to be able to crosslink with
-;;;   ids.
 
 ;;; Code:
 
@@ -60,8 +57,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
            "\\\\\\[\\|\\\\\\]\\|\\$" ""
            (org-element-property :value latex-fragment))))
 
-;;; Adding the id, hoping to make crosslinks work at some point.
-;;; So far it is useless.
+;;; Adding the id so that crosslinks work.
 (defun org-leanpub-headline (headline contents info)
   (concat (let ((id (org-element-property :ID headline)))
             (if id
