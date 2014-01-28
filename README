@@ -9,10 +9,8 @@ not display line numbers.  Html blocks are ignored.  Latex fragments
 are formatted with {$$} {\$$}, and crosslinks work better than the
 default (if you use IDs).
 
-Missing:
-
-- Tables should appear just as they are in org-mode.  Currently
-  they are ignored.
+Take a look at http://juanreyero.com/open/ox-leanpub/index.html for
+more details on how it works, limits and installation.
 
 Disclaimer:
 
