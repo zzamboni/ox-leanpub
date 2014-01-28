@@ -9,12 +9,8 @@
 ;;; better for Leanpub (http://leanpub.com) publication.  It handles
 ;;; footnotes, and makes source code separated from its output, and
 ;;; the output does not display line numbers.  Html blocks are
-;;; ignored.  Links with IDs work.
-
-;;; Missing:
-
-;;; - Tables should appear just as they are in org-mode.  Currently
-;;;   they are ignored.
+;;; ignored.  Links with IDs work.  Tables are exported as they are in
+;;; orgmode, which is pretty much what Leanpub's markdown accepts.
 
 ;;; Code:
 
@@ -43,10 +39,24 @@
                      (headline . org-leanpub-headline)
                      (link . org-leanpub-link)
                      (latex-fragment . org-leanpub-latex-fragment)
-                     (table . org-leanpub-ignore)
+                     (table . org-leanpub-table)
                      ;; Will not work with leanpub:
                      (export-block . org-leanpub-ignore))) ; #+html
 
+(defun org-leanpub-table (table contents info)
+  "Transcode a table object from Org to Markdown.
+CONTENTS is nil.  INFO is a plist holding contextual information.
+Add an #+attr_leanpub: line right before the table with the formatting info that you want to pass to markdown, like
+
+#+attr_leanpub: {title=\"Figure 32\",width=\"60%\"}
+| a table | second col |
+|---------+------------|
+| second  | line       |
+| Third   | line       |
+"
+  (replace-regexp-in-string "^\\#\\+attr_leanpub:\s*" ""
+                            (buffer-substring (org-element-property :begin table)
+                                              (org-element-property :end table))))
 
 (defun org-leanpub-latex-fragment (latex-fragment contents info)
   "Transcode a LATEX-FRAGMENT object from Org to Markdown.
@@ -65,11 +75,11 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
               ""))
           (org-md-headline headline contents info)))
 
-;;; Required to make footnotes work.
 (defun org-leanpub-inner-template (contents info)
   "Return complete document string after markdown conversion.
 CONTENTS is the transcoded contents string.  INFO is a plist
-holding export options."
+holding export options.  Required in order to add footnote
+definitions at the end."
   (concat
    contents
    (let ((definitions (org-export-collect-footnote-definitions
@@ -185,7 +195,7 @@ non-nil."
 
 ;;;###autoload
 (defun org-leanpub-export-to-markdown (&optional async subtreep visible-only)
-  "Export current buffer to a Markdown file.
+  "Export current buffer to a Leanpub's compatible Markdown file.
 
 If narrowing is active in the current buffer, only export its
 narrowed part.
