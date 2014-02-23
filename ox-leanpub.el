@@ -71,7 +71,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 (defun org-leanpub-headline (headline contents info)
   (concat (let ((id (org-element-property :ID headline)))
             (if id
-                (format "{#%s}\n" id)
+                (format "{#L%s}\n" id)
               ""))
           (org-md-headline headline contents info)))
 
@@ -82,23 +82,30 @@ holding export options.  Required in order to add footnote
 definitions at the end."
   (concat
    contents
+   "\n\n"
    (let ((definitions (org-export-collect-footnote-definitions
                        (plist-get info :parse-tree) info)))
+     ;; Looks like leanpub do not like : in labels.
      (mapconcat (lambda (ref)
-                  (let ((id (format "[^%s]: " (let ((label (cadr ref)))
+                  (let ((id (format "[^%s]: " (replace-regexp-in-string
+                                               ":" "_"
+                                               (let ((label (cadr ref)))
                                                 (if label
                                                     label
-                                                  (car ref))))))
+                                                  (car ref)))))))
                     (let ((def (nth 2 ref)))
                       (concat id (org-export-data def info)))))
                 definitions "\n\n"))))
 
 (defun org-leanpub-footnote-reference (footnote contents info)
+  ;; Looks like leanpub do not like : in labels.
   (format "[^%s]"
-          (let ((label (org-element-property :label footnote)))
-            (if label
-                label
-              (org-export-get-footnote-number footnote info)))))
+          (replace-regexp-in-string
+           ":" "_"
+           (let ((label (org-element-property :label footnote)))
+             (if label
+                 label
+               (org-export-get-footnote-number footnote info))))))
 
 (defun org-leanpub-ignore (src-block contents info)
   "")
@@ -137,13 +144,13 @@ channel."
             (org-element-property :value src-block)))))
 
 (defun org-leanpub-link (link contents info)
-  "Transcode LINE-BREAK object into Markdown format.
+  "Transcode a link object into Markdown format.
 CONTENTS is the link's description.  INFO is a plist used as
 a communication channel."
   (let ((type (org-element-property :type link)))
     (cond ((member type '("custom-id" "id"))
            (let ((id (org-element-property :path link)))
-             (format "[%s](#%s)" contents id)))
+             (format "[%s](#L%s)" contents id)))
           ((org-export-inline-image-p link org-html-inline-image-rules)
            (let ((path (let ((raw-path (org-element-property :path link)))
                          (if (not (file-name-absolute-p raw-path)) raw-path
