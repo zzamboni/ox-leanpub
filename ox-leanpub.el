@@ -225,6 +225,17 @@ Return output file's name."
   (let ((outfile (org-export-output-file-name ".md" subtreep)))
     (org-export-to-file 'leanpub outfile async subtreep visible-only)))
 
+;;;###autoload
+(defun org-leanpub-publish-to-leanpub (plist filename pub-dir)
+  "Publish an org file to leanpub.
+
+FILENAME is the filename of the Org file to be published.  PLIST
+is the property list for the given project.  PUB-DIR is the
+publishing directory.
+
+Return output file name."
+  (org-publish-org-to 'leanpub filename ".md" plist pub-dir))
+
 (provide 'ox-leanpub)
 
 ;;; ox-leanpub.el ends here
