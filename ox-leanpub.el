@@ -32,6 +32,7 @@
 		(org-open-file (org-leanpub-export-to-markdown nil s v)))))))
   :translate-alist '((fixed-width . org-leanpub-fixed-width-block)
                      (example-block . org-leanpub-fixed-width-block)
+                     (special-block . org-leanpub-special-block)
                      (src-block . org-leanpub-src-block)
                      (plain-text . org-leanpub-plain-text)
                      (inner-template . org-leanpub-inner-template)
@@ -41,7 +42,7 @@
                      (latex-fragment . org-leanpub-latex-fragment)
                      (table . org-leanpub-table)
                      ;; Will not work with leanpub:
-                     (export-block . org-leanpub-ignore))) ; #+html
+                     (export-block . org-leanpub-ignore)))
 
 (defun org-leanpub-table (table contents info)
   "Transcode a table object from Org to Markdown.
@@ -143,6 +144,34 @@ channel."
    (format "{linenos=off}\n~~~~~~~~\n%s~~~~~~~~"
            (org-remove-indentation
             (org-element-property :value src-block)))))
+
+;;; Export special blocks, mapping them to corresponding block types according to the LeanPub documentation at https://leanpub.com/help/manual#leanpub-auto-blocks-of-text.
+;;; The supported block types and their conversions are listed in lp-block-mappings.
+;;; e.g.
+;;;     #+begin_tip
+;;;     This is a tip
+;;;     #+end_tip
+;;; gets exported as
+;;;     T> This is a tip
+(defun org-leanpub-special-block (special-block contents info)
+  "Transcode a SPECIAL-BLOCK element into Markdown format.
+CONTENTS is nil.  INFO is a plist used as a communication
+channel."
+  (let* ((type (org-element-property :type special-block))
+         (lp-block-mappings
+          '(tip "T"
+            aside "A"
+            warning "W"
+            error "E"
+            note "I"
+            question "Q"
+            discussion "D"
+            exercise "X"
+            center "C"))
+         (lp-char (plist-get lp-block-mappings (intern type))))
+    (replace-regexp-in-string
+     "^" (concat lp-char "> ")
+     (org-remove-indentation contents))))
 
 (defun org-leanpub-link (link contents info)
   "Transcode a link object into Markdown format.
