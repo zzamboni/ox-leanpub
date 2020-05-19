@@ -65,6 +65,26 @@
 (eval-when-compile (require 'cl))
 (require 'ob-core)
 
+;;; Variable definitions
+
+(defvar org-leanpub-manuscript-dir "manuscript"
+  "Directory where to store exported manuscript files, for
+  processing by Leanpub. Do not change this unless you know what
+  you are doing, as this is the value expected by Leanpub.")
+(defvar org-leanpub-resources-dir "resources"
+  "Directory where Leanpub expects to find attachments (images,
+  etc.) within `org-leanpub-manuscript-dir'. Do not change this
+  unless you know what you are doing, as this is the value
+  expected by Leanpub.")
+(defvar org-leanpub-images-dir "images"
+  "Directory in which you want to store images. This directory
+  will be created under `org-leanpub-resources-dir', and
+  symlinked from both the main directory (where your org file is
+  stored) and from `org-leanpub-resources-dir', so that the
+  images can be stored only once in your repository. You can
+  change this value but need to be consistent in using it with
+  the correct value in your org file.")
+
 (defun org-leanpub-book-setup-menu-markdown ()
   "Set up the Multifile export menu entries within the Leanpub Markdown menu"
   (interactive)
@@ -76,7 +96,7 @@
           (?s "Multifile: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t)))
           (?c "Multifile: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t 'current)))))
     :options-alist
-    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil "manuscript" t)
+    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
       (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil       t))))
 
@@ -91,7 +111,7 @@
           (?s "Multifile: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t)))
           (?c "Multifile: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t 'current)))))
     :options-alist
-    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil "manuscript" t)
+    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
       (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil       t))))
 
@@ -115,7 +135,7 @@
 
     ;; Return the relative output pathname given the basename of a
     ;; file, using the correct output dir
-    (defun outfile (f) (concat outdir "/" f))
+    (defun outfile (f) (concat (file-name-as-directory outdir) f))
 
     ;; Main export function: processes an org element, and if it's a
     ;; top-level heading, exports it
@@ -172,6 +192,17 @@
             (org-mark-subtree)
             (message (format "Exporting %s (%s)" final-filename title))
             (funcall export-function nil t)))))
+
+    ;; Create necessary directories and symlinks, if needed
+    (let* ((img-dir-rel-to-outdir (concat (file-name-as-directory org-leanpub-resources-dir)
+                                          org-leanpub-images-dir))
+           (img-dir-rel-to-repo (concat (file-name-as-directory outdir)
+                                        img-dir-rel-to-outdir))
+           (img-symlink-in-outdir (concat (file-name-as-directory outdir) org-leanpub-images-dir)))
+      (make-directory img-dir-rel-to-repo t)
+
+      (make-symbolic-link img-dir-rel-to-repo org-leanpub-images-dir t)
+      (make-symbolic-link img-dir-rel-to-outdir img-symlink-in-outdir t))
 
     ;; Initialization: delete all the book definition and *matter.txt
     ;; files, they get recreated as needed
