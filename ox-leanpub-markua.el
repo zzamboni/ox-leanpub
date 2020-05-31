@@ -189,8 +189,15 @@ org-md-headline but without inserting the <a> anchors."
 
 ;;; Adding the id so that crosslinks work.
 (defun org-markua-headline (headline contents info)
-  (concat (org-markua-attribute-line headline info)
-          (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info))))
+  (let* ((tags (org-export-get-tags headline info))
+         (other-attrs (remove-if 'null
+                                 (mapcar (lambda (elem)
+                                           (if (string-equal elem "sample")
+                                               '(:sample . "true")
+                                             (when (string-equal elem "nobook")
+                                               '(:book . "false")))) tags))))
+      (concat (org-markua-attribute-line headline info other-attrs)
+           (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info)))))
 
 (defun org-markua-item (item contents info)
   "Transcode ITEM element into Markua format.
