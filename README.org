@@ -1,0 +1,115 @@
+#+title: ox-leanpub.el
+#+author: Diego Zamboni
+#+email: diego@zzamboni.org
+
+Org-mode export backends to produce books in the correct structure and format for publication with [[https://leanpub.com/][Leanpub]].
+
+This package contains three Emacs libraries:
+
+- =ox-leanpub-markua.el= exports Org files in Leanpub's [[https://leanpub.com/markua/read][Markua]] format, which is the default and recommended format for Leanpub books.
+- =ox-leanpub-markdown.el= exports Org files in [[https://leanpub.com/lfm/read][Leanpub Flavored Markdown]] (LFM), the original markup format for Leanpub books. It is recommended that you use Markua.
+- =ox-leanpub-book.el= exports an Org file in multiple files in the structure [[https://leanpub.com/manual/read?#writing-your-book-in-github-mode][required by Leanpub]], including the necessary =Book.txt=, =Sample.txt= and =Subset.txt= files. It can use either Markua or LFM as the export backend.
+
+This package allows you to write your book entirely in Org mode, and completely manages the production of the necessary files for Leanpub to be able to render your book. I use this package to publish most of [[https://leanpub.com/u/zzamboni][my books]] published on Leanpub.
+
+*Note:* I highly recommend you use the Markua exporter, as it's more mature and complete. Some Org constructs might not be exported correctly to Markdown.
+
+If you have any feedback or bug reports, please open an issue at https://github.com/zzamboni/ox-leanpub.
+
+* Installation
+
+For now the module is not yet available in MELPA, so you need to clone this repository using =git=:
+
+#+begin_src shell
+git clone https://github.com/zzamboni/ox-leanpub.git
+#+end_src
+
+=ox-leanpub-markua= depends on  [[https://github.com/larstvei/ox-gfm][=ox-gfm=]] for table generation, so you need to install it as well. Easiest is to install it from MELPA using =M-x package-install=, or =use-package=:
+
+#+begin_src emacs-lisp
+    (use-package ox-gfm
+      :after org)
+#+end_src
+
+And then load the modules from the =ox-leanpub= directory. Since =ox-leanpub-book= can use either the Markua or the LFM backend, you need to tell it which menu entries to set up in Org's export menu by calling the corresponding function =org-leanpub-book-setup-menu-markua= or =org-leanpub-book-setup-menu-markdown=. For example, using =use-package=, I use the following configuration for exporting Markua:
+
+#+begin_src emacs-lisp
+  (use-package ox-leanpub-markua
+    :ensure nil
+    :after org
+    :load-path "~/.emacs.d/lisp/ox-leanpub")
+  (use-package ox-leanpub-book
+    :ensure nil
+    :after ox-leanpub-markua
+    :load-path "~/.emacs.d/lisp/ox-leanpub"
+    :config
+    (org-leanpub-book-setup-menu-markua))
+#+end_src
+
+If you want to export to LFM, you can use a similar construct:
+
+#+begin_src emacs-lisp
+  (use-package ox-leanpub-markdown
+    :ensure nil
+    :after org
+    :load-path "~/.emacs.d/lisp/ox-leanpub")
+  (use-package ox-leanpub-book
+    :ensure nil
+    :after ox-leanpub-markdown
+    :load-path "~/.emacs.d/lisp/ox-leanpub"
+    :config
+    (org-leanpub-book-setup-menu-markdown))
+#+end_src
+
+You can of course have both, just call both =org-leanpub-book-setup-menu-markdown= and =org-leanpub-book-setup-menu-markua= after loading the corresponding modules.
+
+* Usage
+
+The =ox-leanpub-book= module defines a new export backend called =leanpub-book=, which adds three additional items in the corresponding LeanPub export section (under the "Export to Leanpub Markdown" or "Export to Leanpub Markua", respectively):
+
+- "Book: Whole book", which exports the whole book as one-file-per-chapter;
+- "Book: Subset", which exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
+- "Book: Current chapter" to explicitly export only the current chapter to its own file. This also updates =Subset.txt=, so it can be used to preview the current chapter without having to set =#+LEANPUB_WRITE_SUBSET: current=.
+
+The book files are populated as follows:
+
+- =Book.txt= with all chapters, except those tagged with =noexport=.
+- =Sample.txt= with all chapters tagged with =sample=. *Note:* this file is only relevant when using LFM. In Markua output, all headings tagged with =sample= are given the =sample: true= attribute as [[https://leanpub.com/markua/read#conditional-inclusion][documented in the Markua manual]].
+- =Subset.txt= with chapters depending on the value of the =#+LEANPUB_WRITE_SUBSET= file property (if set):
+  - Default or =none=: not created.
+  - =tagged=: use all chapters tagged =subset=.
+  - =all=: use the same chapters as =Book.txt=.
+  - =sample=: use same chapters as =Sample.txt=.
+  - =current=: export the current chapter (where the cursor is at the moment of the export) as the contents of =Subset.txt=.
+
+The exported chapter files are named based on the chapter titles. The last-used filename is stored in the =EXPORT_FILE_NAME= property of the corresponding heading. By default, once this property is set it is not modified on future exports. If you set the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= attribute in your file, the =EXPORT_FILE_NAME= property will be updated every time the book is exported. This can be useful to keep the filenames in sync when you change the heading titles in your document, but be aware that the file exported with the old name will not be removed automatically.
+
+* Special heading tags
+
+If a heading has the =frontmatter=, =mainmatter= or =backmatter= tags, the [[https://leanpub.com/markua/read#directives][corresponding directive]] (they work in both Markdown and Markup modes) is inserted in the output, before the headline. This way, you only need to tag the first chapter of the front, main, and backmatter, respectively.
+
+If a heading has the =sample= tag in a Markua export, the [[https://leanpub.com/markua/read#conditional-inclusion][conditional attribute]] ={sample: true}= is inserted before the heading in the output, to indicate that the section should be included in the book sample generated by Leanpub.
+
+If a heading has the =nobook= tag, the [[https://leanpub.com/markua/read#conditional-inclusion][conditional attribute]] ={book: false}= is inserted before the heading in the output, to indicate that the section should not be included in the book. You can specify both the =nobook= and =sample= tags to flag a section which should only be included in the sample.
+
+*Note:* =noexport= and =nobook= are similar but have different semantics. =noexport= is interpreted by Org when exporting your file, and it completely omits the corresponding headings from the output, whereas =nobook= includes the text, but flags it accordingly for Leanpub to ignore it when rendering the final book.
+
+* Configuration
+
+The modules provide reasonable defaults, but you can configure some parameters by specifying keywords at the top of your Org file. The following are recognized:
+
+| *Keyword*                              | *Default value* | *Description*                                                                                                                                                                                                                                                         |
+| =#+LEANPUB_BOOK_OUTPUT_DIR=            | ="manuscript"=  | Subdirectory where the exported files will be created.                                                                                                                                                                                                              |
+| =#+LEANPUB_BOOK_WRITE_SUBSET=          | ="none"=        | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                          |
+| =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES=   | =nil=           | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title.                                                                                                                                                      |
+| =#+OX_MARKUA_USE_NOWEB_REF_AS_CAPTION= | =nil=           | (only for Markua export) If set (regardless of its value), use ="«noweb-ref»≡"= as the caption for source code blocks where the =:noweb-ref= header argument is set. This can be used (depending on the formatting of your book) to emulate the default output format from [[https://en.wikipedia.org/wiki/Noweb][noweb]]-rendered files. |
+
+* Credits
+
+- The original version of =ox-leanpub-markdown.el= was written by [[http://juanreyero.com/open/ox-leanpub/index.html][Juan Reyero]] and is still available at https://github.com/juanre/ox-leanpub. I made many changes to fix some bugs and process additional markup elements, and =ox-leanpub-markua.el= is derived from it.
+- =ox-leanpub-book.el= is based originally on code by Lakshmi Narasimhan, published at https://medium.com/@lakshminp/publishing-a-book-using-org-mode-9e817a56d144, but also heavily modified.
+- =ox-leanpub-markua= delegates the work of exporting tables to [[https://github.com/larstvei/ox-gfm][=ox-gfm=]].
+
+* Disclaimer
+
+- I am in no way associated with Leanpub.  Leanpub is not responsible for this code.  Leanpub is not responsible for any damage it may cause in your computer, and neither am I.
