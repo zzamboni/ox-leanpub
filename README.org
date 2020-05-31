@@ -14,7 +14,15 @@ This package allows you to write your book entirely in Org mode, and completely 
 
 *Note:* I highly recommend you use the Markua exporter, as it's more mature and complete. Some Org constructs might not be exported correctly to Markdown.
 
-If you have any feedback or bug reports, please open an issue at https://github.com/zzamboni/ox-leanpub.
+If you have any feedback or bug reports, please open an issue at https://github.com/zzamboni/ox-leanpub/issues.
+
+* Table of Contents :toc:
+- [[#installation][Installation]]
+- [[#usage][Usage]]
+- [[#special-heading-tags][Special heading tags]]
+- [[#configuration][Configuration]]
+- [[#credits][Credits]]
+- [[#disclaimer][Disclaimer]]
 
 * Installation
 
@@ -74,7 +82,7 @@ The =ox-leanpub-book= module defines a new export backend called =leanpub-book=,
 The book files are populated as follows:
 
 - =Book.txt= with all chapters, except those tagged with =noexport=.
-- =Sample.txt= with all chapters tagged with =sample=. *Note:* this file is only relevant when using LFM. In Markua output, all headings tagged with =sample= are given the =sample: true= attribute as [[https://leanpub.com/markua/read#conditional-inclusion][documented in the Markua manual]].
+- =Sample.txt= with all chapters tagged with =sample=. *Note:* this file is only created when exporting LFM. In Markua output, all headings tagged with =sample= are given the =sample: true= attribute as [[https://leanpub.com/markua/read#conditional-inclusion][documented in the Markua manual]].
 - =Subset.txt= with chapters depending on the value of the =#+LEANPUB_WRITE_SUBSET= file property (if set):
   - Default or =none=: not created.
   - =tagged=: use all chapters tagged =subset=.
@@ -102,7 +110,7 @@ The modules provide reasonable defaults, but you can configure some parameters b
 | =#+LEANPUB_BOOK_OUTPUT_DIR=            | "manuscript"  | Subdirectory where the exported files will be created.                                                                                                                                                                                                                                       |
 | =#+LEANPUB_BOOK_WRITE_SUBSET=          | "none"        | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                                                   |
 | =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES=   | =nil=           | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title.                                                                                                                                                                               |
-| =#+OX_MARKUA_USE_NOWEB_REF_AS_CAPTION= | =nil=           | (only for Markua export) If set (regardless of its value), use ="«noweb-ref»≡"= as the caption for source code blocks where the =:noweb-ref= header argument is set. This can be used (depending on the formatting of your book) to emulate the default output format from [[https://en.wikipedia.org/wiki/Noweb][noweb]]-rendered files. |
+| =#+OX_MARKUA_USE_NOWEB_REF_AS_CAPTION= | =nil=           | (only for Markua export) If set (regardless of its value), use "«noweb-ref»≡" as the caption for source code blocks where the =:noweb-ref= header argument is set. This can be used (depending on the formatting of your book) to emulate the default output format from [[https://en.wikipedia.org/wiki/Noweb][noweb]]-rendered files.   |
 
 * Credits
 
