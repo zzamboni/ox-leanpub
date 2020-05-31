@@ -24,7 +24,7 @@ For now the module is not yet available in MELPA, so you need to clone this repo
 git clone https://github.com/zzamboni/ox-leanpub.git
 #+end_src
 
-=ox-leanpub-markua= depends on  [[https://github.com/larstvei/ox-gfm][=ox-gfm=]] for table generation, so you need to install it as well. Easiest is to install it from MELPA using =M-x package-install=, or =use-package=:
+=ox-leanpub-markua= depends on  [[https://github.com/larstvei/ox-gfm][ox-gfm]] for table generation, so you need to install it as well. Easiest is to install it from MELPA using =M-x package-install=, or =use-package=:
 
 #+begin_src emacs-lisp
     (use-package ox-gfm
@@ -98,18 +98,18 @@ If a heading has the =nobook= tag, the [[https://leanpub.com/markua/read#conditi
 
 The modules provide reasonable defaults, but you can configure some parameters by specifying keywords at the top of your Org file. The following are recognized:
 
-| *Keyword*                              | *Default value* | *Description*                                                                                                                                                                                                                                                         |
-| =#+LEANPUB_BOOK_OUTPUT_DIR=            | ="manuscript"=  | Subdirectory where the exported files will be created.                                                                                                                                                                                                              |
-| =#+LEANPUB_BOOK_WRITE_SUBSET=          | ="none"=        | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                          |
-| =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES=   | =nil=           | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title.                                                                                                                                                      |
+| *Keyword*                              | *Default value* | *Description*                                                                                                                                                                                                                                                                                  |
+| =#+LEANPUB_BOOK_OUTPUT_DIR=            | "manuscript"  | Subdirectory where the exported files will be created.                                                                                                                                                                                                                                       |
+| =#+LEANPUB_BOOK_WRITE_SUBSET=          | "none"        | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                                                   |
+| =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES=   | =nil=           | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title.                                                                                                                                                                               |
 | =#+OX_MARKUA_USE_NOWEB_REF_AS_CAPTION= | =nil=           | (only for Markua export) If set (regardless of its value), use ="«noweb-ref»≡"= as the caption for source code blocks where the =:noweb-ref= header argument is set. This can be used (depending on the formatting of your book) to emulate the default output format from [[https://en.wikipedia.org/wiki/Noweb][noweb]]-rendered files. |
 
 * Credits
 
 - The original version of =ox-leanpub-markdown.el= was written by [[http://juanreyero.com/open/ox-leanpub/index.html][Juan Reyero]] and is still available at https://github.com/juanre/ox-leanpub. I made many changes to fix some bugs and process additional markup elements, and =ox-leanpub-markua.el= is derived from it.
 - =ox-leanpub-book.el= is based originally on code by Lakshmi Narasimhan, published at https://medium.com/@lakshminp/publishing-a-book-using-org-mode-9e817a56d144, but also heavily modified.
-- =ox-leanpub-markua= delegates the work of exporting tables to [[https://github.com/larstvei/ox-gfm][=ox-gfm=]].
+- =ox-leanpub-markua= delegates the work of exporting tables to [[https://github.com/larstvei/ox-gfm][ox-gfm]].
 
 * Disclaimer
 
-- I am in no way associated with Leanpub.  Leanpub is not responsible for this code.  Leanpub is not responsible for any damage it may cause in your computer, and neither am I.
+- I am in no way associated with Leanpub.  Leanpub is not responsible for this code.
