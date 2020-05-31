@@ -151,7 +151,7 @@
                (title (or (nth 4 (org-heading-components)) ""))
                (tags (org-get-tags))
                ;; Compute or get (from EXPORT_FILE_NAME) the output filename
-               (basename (concat (replace-regexp-in-string " " "-" (downcase (or id title)))
+               (basename (concat (replace-regexp-in-string "[^[:alnum:]]" "-" (downcase (or id title)))
                                  export-extension))
                (computed-filename (outfile basename))
                (stored-filename (org-entry-get (point) "EXPORT_FILE_NAME"))
