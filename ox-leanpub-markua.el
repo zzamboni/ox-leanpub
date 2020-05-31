@@ -69,7 +69,7 @@
 
 ;; Collect #+NAME, #+CAPTION, and any attributes specified as :key
 ;; value in the #+ATTR_LEANPUB line, and put them all together in a
-;; Leanpub-style attribute line of the form {key=value,...}. If an
+;; Leanpub-style attribute line of the form {key: value,...}. If an
 ;; attribute is present in both places (e.g. if both #+CAPTION and
 ;; :title are specified), then the values from #+ATTR_LEANPUB take
 ;; precedence.
