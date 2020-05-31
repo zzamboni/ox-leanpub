@@ -11,15 +11,17 @@
 ;;; https://medium.com/@lakshminp/publishing-a-book-using-org-mode-9e817a56d144,
 ;;; but heavily modified)
 ;;;
-;;; New export backend called leanpub-book, which creates a new
-;;; export section called "LeanPub Book" with the following items:
+;;; New export backend called leanpub-book, which creates a new export
+;;; section under the corresponding markua or makdown section with the
+;;; following items:
 ;;;
-;;; - "Multifile Export", which exports the whole book using default
+;;; - "Book: Whole book", which exports the whole book using default
 ;;;   settings (see below);
 ;;;
-;;; - "Multifile Export (subset)", which creates only the Subset.txt file;
+;;; - "Book: Subset", which exports the subset files and the
+;;;   Subset.txt file, according to the rules below.
 ;;;
-;;; - "Export current chapter" to explicitly export only the current
+;;; - "Book: Current chapter" to explicitly export only the current
 ;;;   chapter to its own file. This also updates Subset.txt, so it can be
 ;;;   used to preview the current chapter without having to set
 ;;;   `#+LEANPUB_WRITE_SUBSET: current'.
@@ -86,15 +88,15 @@
   the correct value in your org file.")
 
 (defun org-leanpub-book-setup-menu-markdown ()
-  "Set up the Multifile export menu entries within the Leanpub Markdown menu"
+  "Set up the Book export menu entries within the Leanpub Markdown menu"
   (interactive)
   (require 'ox-leanpub-markdown)
   (org-export-define-derived-backend 'leanpub-book-markdown 'leanpub-markdown
     :menu-entry
     '(?L 1
-         ((?b "Multifile: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b)))
-          (?s "Multifile: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t)))
-          (?c "Multifile: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t 'current)))))
+         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b)))
+          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t)))
+          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
@@ -107,9 +109,9 @@
   (org-export-define-derived-backend 'leanpub-book-markua 'leanpub-markua
     :menu-entry
     '(?M 1
-         ((?b "Multifile: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b)))
-          (?s "Multifile: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t)))
-          (?c "Multifile: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t 'current)))))
+         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b)))
+          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t)))
+          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
