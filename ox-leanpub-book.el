@@ -1,8 +1,8 @@
 ;;; ox-leanpub-book.el --- Export an org-file to LeanPub's multifile setup  -*- lexical-binding: t; -*-
 
-;;; Copyright (C) 2019  Zamboni Diego
+;;; Copyright (C) 2019-2020 Diego Zamboni
 
-;;; Author: Zamboni Diego <diego@zzamboni.org>
+;;; Author: Diego Zamboni <diego@zzamboni.org>
 ;;; Keywords: org, leanpub
 
 ;;; Commentary:
@@ -44,7 +44,9 @@
 ;;; The book files are populated as follows:
 ;;;
 ;;; - `Book.txt' with all chapters, except those tagged with `noexport'.
-;;; - `Sample.txt' with all chapters tagged with `sample'.
+;;; - `Sample.txt' with all chapters tagged with `sample', only for
+;;;   Markdown exports. In Markua exports, the conditional attributes
+;;;   are used, as documented in https://leanpub.com/markua/read#conditional-inclusion.
 ;;; - `Subset.txt' with chapters depending on the value of the
 ;;;   `#+LEANPUB_WRITE_SUBSET' file property (if set):
 ;;;   - `none' (default): not created.
@@ -94,9 +96,9 @@
   (org-export-define-derived-backend 'leanpub-book-markdown 'leanpub-markdown
     :menu-entry
     '(?L 1
-         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b)))
-          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t)))
-          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t 'current)))))
+         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t)))
+          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t t)))
+          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown a s v b t t 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
@@ -110,15 +112,15 @@
     :menu-entry
     '(?M 1
          ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b)))
-          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t)))
-          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b t 'current)))))
+          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b nil t)))
+          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua a s v b nil t 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
       (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil       t))))
 
 ;; Main export function
-(defun org-leanpub-export-book (export-function export-extension export-backend-symbol &optional async subtreep visible-only body-only only-subset subset-type)
+(defun org-leanpub-export-book (export-function export-extension export-backend-symbol &optional async subtreep visible-only body-only do-sample-file only-subset subset-type)
   "Export buffer to a Leanpub book, splitting by top-level headline and populating the corresponding book-specification files."
   (interactive)
   (let* ((info (org-combine-plists
@@ -172,7 +174,7 @@
             (let ((line-n (concat line "\n")))
               (unless only-subset
                 (append-to-file line-n nil (outfile "Book.txt"))
-                (when (or (member "sample" tags) always)
+                (when (and do-sample-file (or (member "sample" tags) always))
                   (append-to-file line-n nil (outfile "Sample.txt"))))
               (when (and produce-subset (or is-subset always))
                 (append-to-file line-n nil (outfile "Subset.txt")))))
