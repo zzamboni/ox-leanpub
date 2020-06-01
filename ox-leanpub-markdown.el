@@ -1,9 +1,10 @@
-;;; ox-leanpub-markdown.el --- Leanpub Markdown Back-End for Org Export Engine
+;;; ox-leanpub-markdown.el --- Leanpub Markdown Back-End for Org Export Engine  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019-2020 Diego Zamboni, Juan Reyero
 
 ;; Author: Diego Zamboni <diego@zzamboni.org>, Juan Reyero <juan _at! juanreyero.com>
 ;; Keywords: org, wp, markdown, leanpub
+;; Package-Requires: (cl-lib)
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.

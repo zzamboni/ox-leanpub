@@ -1,9 +1,10 @@
-;;; ox-leanpub-markua.el --- Markua Back-End for Org Export Engine
+;;; ox-leanpub-markua.el --- Markua Back-End for Org Export Engine  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019-2020 Diego Zamboni
 
 ;; Author: Diego Zamboni <diego@zzamboni.org>
 ;; Keywords: org, wp, markdown, leanpub, markua
+;; Package-Requires: (ox-gfm cl-lib)
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.

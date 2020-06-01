@@ -4,6 +4,7 @@
 
 ;; Author: Diego Zamboni <diego@zzamboni.org>
 ;; Keywords: org, leanpub
+;; Package-Requires: (ox-gfm cl-lib)
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
