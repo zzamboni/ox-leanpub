@@ -155,7 +155,7 @@ contextual information.  We prepend the Leanpub attribute line if needed."
 ;; (defun org-markua-table-cell (table-cell contents info)
 ;;   (format " %s |" (org-export-data contents info)))
 
-(defun org-leanpub-markua-latex-fragment (latex-fragment contents info)
+(defun org-leanpub-markua-latex-fragment (latex-fragment _contents _info)
   "Transcode a LATEX-FRAGMENT object from Org to Markua.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (concat
@@ -266,7 +266,7 @@ definitions at the end."
                       (concat id (org-export-data def info)))))
                 definitions "\n\n"))))
 
-(defun org-leanpub-markua-footnote-reference (footnote contents info)
+(defun org-leanpub-markua-footnote-reference (footnote _contents info)
   "Export a `FOOTNOTE'.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   ;; Leanpub does not like : in labels, so we replace them with underscores
@@ -278,12 +278,12 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
                  label
                (org-export-get-footnote-number footnote info))))))
 
-(defun org-leanpub-markua-ignore (src-block contents info)
+(defun org-leanpub-markua-ignore (_src-block _contents _info)
   "Return an empty string for `SRC-BLOCK' elements which are ignored.
 CONTENTS and INFO are also ignored."
   "")
 
-(defun org-leanpub-plain-text (plain-text info)
+(defun org-leanpub-plain-text (plain-text _info)
   "Return `PLAIN-TEXT' elements as-is.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   plain-text)
@@ -309,7 +309,7 @@ the plist used as a communication channel."
 ;;;     return math.pi * diameter
 ;;; longitude(10)
 ;;; ~~~~~~~~
-(defun org-leanpub-markua-src-block (src-block contents info)
+(defun org-leanpub-markua-src-block (src-block _contents info)
   "Transcode SRC-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
@@ -409,7 +409,7 @@ a communication channel."
 
 ;;;; Line Break
 
-(defun org-leanpub-markua-line-break (_line-break _contents info)
+(defun org-leanpub-markua-line-break (_line-break _contents _info)
   "Transcode a LINE-BREAK object from Org to Markua.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   "{{markua:linebreak}}")
