@@ -109,7 +109,7 @@ The modules provide reasonable defaults, but you can configure some parameters b
 
 * Credits
 
-- The original version of =ox-leanpub-markdown.el= was written by [[http://juanreyero.com/open/ox-leanpub/index.html][Juan Reyero]] as =ox-leanpub.el= and is still available at https://github.com/juanre/ox-leanpub. I made many changes to fix some bugs and process additional markup elements, and =ox-leanpub-markua.el= is also derived from it.
+- The original version of =ox-leanpub-markdown.el= was written by [[http://juanreyero.com/open/ox-leanpub/index.html][Juan Reyero]] as =ox-leanpub.el= and is still available at https://github.com/juanre/ox-leanpub. I made many changes to fix some bugs and process additional markup elements, and =ox-leanpub-markua.el= is also derived from it. This repository started as a fork of the original, but given the amount of changes I have recreated it as a standalone repo, to avoid confusion.
 - =ox-leanpub-book.el= is based originally on code by Lakshmi Narasimhan, published at https://medium.com/@lakshminp/publishing-a-book-using-org-mode-9e817a56d144, but also heavily modified.
 - =ox-leanpub-markua= delegates the work of exporting tables to [[https://github.com/larstvei/ox-gfm][ox-gfm]].
 
