@@ -20,12 +20,12 @@
 ;;; Commentary:
 
 ;;; Adaptation of ox-leanpub-markdown.el to use Markua markup as used
-;;; by Leanpub (https://leanpub.com/markua/read). Tables are exported
+;;; by Leanpub (https://leanpub.com/markua/read).  Tables are exported
 ;;; in Github Flavored Markdown, which is supported by Markua, using
 ;;; ox-gfm (https://github.com/larstvei/ox-gfm).  The #+NAME and
 ;;; #+CAPTION attributes of an object are converted to the LeanPub
-;;; "id" and "title" attributes. Other attributes specified in an
-;;; #+ATTR_LEANPUB line are included as-is. For example:
+;;; "id" and "title" attributes.  Other attributes specified in an
+;;; #+ATTR_LEANPUB line are included as-is.  For example:
 ;;;
 ;;; #+NAME: some-id
 ;;; #+CAPTION: Some name
@@ -37,7 +37,7 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'ox-md)
 (require 'ob-core)
 (require 'subr-x)
@@ -78,13 +78,19 @@
 
 ;;; Utility functions
 
-;; Collect #+NAME, #+CAPTION, and any attributes specified as :key
-;; value in the #+ATTR_LEANPUB line, and put them all together in a
-;; Leanpub-style attribute line of the form {key: value,...}. If an
-;; attribute is present in both places (e.g. if both #+CAPTION and
-;; :title are specified), then the values from #+ATTR_LEANPUB take
-;; precedence.
 (defun org-markua-attribute-line (elem info &optional other-attrs nonewline)
+  "Generate a Leanpub attribute line before an object.
+Collect #+NAME, #+CAPTION, and any attributes specified as :key
+value in the #+ATTR_LEANPUB line for `ELEM', and put them all together in a
+Leanpub-style attribute line of the form {key: value,...}.  If an
+attribute is present in both places (e.g. if both #+CAPTION and
+:title are specified), then the values from #+ATTR_LEANPUB take
+precedence.
+
+`INFO' is a plist holding contextual information.  `OTHER-ATTRS',
+if given, is an alist holding additional attributes to
+include.  `NONEWLINE', supresses a trailing newline in the
+produced attribute line."
   (let* ((init (list (cons :id (or (org-element-property :name elem)
                                    (org-element-property :ID elem)
                                    (org-element-property :CUSTOM_ID elem)))
@@ -94,7 +100,7 @@
          (oldstyle (string-prefix-p "{" lpattr-str))
          (printed '())
          (lpattr-str-new (mapconcat 'identity
-                                    (remove-if 'null
+                                    (cl-remove-if 'null
                                                (mapcar (lambda (elem)
                                                          (let* ((keysym (car elem))
                                                                 (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
@@ -123,8 +129,8 @@
 
 (defun org-markua-table (table contents info)
   "Use ox-gfm to transcode TABLE element into Github Flavored Markdown table.
-CONTENTS is the contents of the table. INFO is a plist holding
-contextual information. We prepend the Leanpub attribute line if needed."
+CONTENTS is the contents of the table.  INFO is a plist holding
+contextual information.  We prepend the Leanpub attribute line if needed."
   (concat (org-markua-attribute-line table info)
           (org-gfm-table table contents info)))
 
@@ -160,7 +166,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 (defun org-leanpub-markua-headline-without-anchor (headline contents info)
   "Transcode HEADLINE element into Markua format.
 CONTENTS is the headline contents.  INFO is a plist used as
-a communication channel. This is the same function as
+a communication channel.  This is the same function as
 org-md-headline but without inserting the <a> anchors."
   (unless (org-element-property :footnote-section-p headline)
     (let* ((level (org-export-get-relative-level headline info))
@@ -198,10 +204,13 @@ org-md-headline but without inserting the <a> anchors."
 	      (concat (org-md--headline-title style level heading nil tags)
 		            contents))))))
 
-;;; Adding the id so that crosslinks work.
 (defun org-markua-headline (headline contents info)
+  "Add Leanpub attribute line before HEADLINE.
+This function also processes the `sample' and `nobook' tags and
+produces the appropriate Leanpub attributes.  CONTENTS is the
+item contents.  INFO is a plist used as a communication channel."
   (let* ((tags (org-export-get-tags headline info))
-         (other-attrs (remove-if 'null
+         (other-attrs (cl-remove-if 'null
                                  (mapcar (lambda (elem)
                                            (if (string-equal elem "sample")
                                                '(:sample . "true")
@@ -256,7 +265,9 @@ definitions at the end."
                 definitions "\n\n"))))
 
 (defun org-markua-footnote-reference (footnote contents info)
-  ;; Looks like leanpub do not like : in labels.
+  "Export a `FOOTNOTE'.
+CONTENTS is nil.  INFO is a plist holding contextual information."
+  ;; Leanpub does not like : in labels, so we replace them with underscores
   (format "[^%s]"
           (replace-regexp-in-string
            ":" "_"
@@ -266,10 +277,14 @@ definitions at the end."
                (org-export-get-footnote-number footnote info))))))
 
 (defun org-markua-ignore (src-block contents info)
+  "Return an empty string for `SRC-BLOCK' elements which are ignored.
+CONTENTS and INFO are also ignored."
   "")
 
-(defun org-markua-plain-text (text info)
-  text)
+(defun org-leanpub-plain-text (plain-text info)
+  "Return `PLAIN-TEXT' elements as-is.
+CONTENTS is nil.  INFO is a plist holding contextual information."
+  plain-text)
 
 ;;; EOLs are removed from paragraphs in Markua
 
@@ -283,6 +298,7 @@ the plist used as a communication channel."
                                     nil 'literal)))
 
 (defun org-markua-get-header-arg (arg src-block)
+  "Get and return a header `ARG' from a `SRC-BLOCK'."
   (alist-get arg (org-babel-parse-header-arguments (org-element-property :parameters src-block))))
 
 ;;; {lang="python"}
@@ -314,7 +330,7 @@ channel."
 ;;; > 123.0
 ;;; > ~~~~~~~~
 (defun org-markua-example-block (src-block contents info)
-  "Transcode FIXED-WIDTH-BLOCK element into Markua format.
+  "Transcode SRC-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (org-markua-src-block src-block contents info))
@@ -323,7 +339,7 @@ channel."
 ;;; > 123.0
 ;;; > ~~~~~~~~
 (defun org-markua-fixed-width-block (src-block contents info)
-  "Transcode FIXED-WIDTH-BLOCK element into Markua format.
+  "Transcode SRC-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (org-markua-src-block src-block contents info))
@@ -362,7 +378,7 @@ channel."
        (chomp-end (org-remove-indentation contents)))))))
 
 (defun org-markua-link (link contents info)
-  "Transcode a link object into Markua format.
+  "Transcode a LINK object into Markua format.
 CONTENTS is the link's description.  INFO is a plist used as
 a communication channel."
   (let ((type (org-element-property :type link)))

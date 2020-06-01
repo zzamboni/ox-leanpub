@@ -31,7 +31,7 @@
 
 ;; - `ox-leanpub-book.el' exports an Org file in multiple files in
 ;;   the structure required by Leanpub, including the necessary
-;;   `Book.txt', `Sample.txt' and `Subset.txt' files. It can use
+;;   `Book.txt', `Sample.txt' and `Subset.txt' files.  It can use
 ;;   either Markua or LFM as the export backend.
 
 ;; This package allows you to write your book entirely in Org mode,
@@ -39,9 +39,9 @@
 ;; Leanpub to be able to render your book.
 
 ;; Note: I highly recommend you use the Markua exporter, as it's more
-;; mature and complete. Some Org constructs might not be exported
-;; correctly to Markdown. When you load `ox-leanpub', the Markua
-;; exporter is set up by default. To enable the Markdown exporter,
+;; mature and complete.  Some Org constructs might not be exported
+;; correctly to Markdown.  When you load `ox-leanpub', the Markua
+;; exporter is set up by default.  To enable the Markdown exporter,
 ;; include the following lines in your configuration after loading
 ;; `ox-leanpub':
 
@@ -53,6 +53,7 @@
 
 (require 'ox-leanpub-markua)
 (require 'ox-leanpub-book)
+
 (org-leanpub-book-setup-menu-markua)
 
 (provide 'ox-leanpub)

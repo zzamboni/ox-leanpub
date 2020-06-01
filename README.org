@@ -115,4 +115,4 @@ The modules provide reasonable defaults, but you can configure some parameters b
 
 * Disclaimer
 
-- I am in no way associated with Leanpub other than being a happy author.  Leanpub is not responsible for this code.
+- I am in no way associated with Leanpub other than being a happy author. Leanpub is not responsible for this code.
