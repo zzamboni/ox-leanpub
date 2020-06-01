@@ -1,8 +1,8 @@
 ;;; ox-leanpub.el --- Export Org documents to Leanpub book format  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  Zamboni Diego
+;; Copyright (C) 2020 Diego Zamboni
 
-;; Author: Zamboni Diego <diego@zzamboni.org>
+;; Author: Diego Zamboni <diego@zzamboni.org>
 ;; Keywords: org, leanpub
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
