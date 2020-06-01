@@ -14,7 +14,7 @@ This package allows you to write your book entirely in Org mode, and completely 
 
 *Note:* I highly recommend you use the Markua exporter, as it's more mature and complete. Some Org constructs might not be exported correctly to Markdown.
 
-If you have any feedback or bug reports, please open an issue at https://github.com/zzamboni/ox-leanpub/issues.
+If you have any feedback or bug reports, please open an issue at https://gitlab.com/zzamboni/ox-leanpub/-/issues.
 
 * Table of Contents :toc:
 - [[#installation][Installation]]
@@ -29,7 +29,7 @@ If you have any feedback or bug reports, please open an issue at https://github.
 For now the module is not yet available in MELPA, so you need to clone this repository using =git=:
 
 #+begin_src shell
-  git clone https://github.com/zzamboni/ox-leanpub.git
+  git clone https://gitlab.com/zzamboni/ox-leanpub.git
 #+end_src
 
 =ox-leanpub-markua= depends on  [[https://github.com/larstvei/ox-gfm][ox-gfm]] for exporting tables, so you need to install it as well. Easiest is to install it from MELPA using =M-x package-install=, or =use-package=:
