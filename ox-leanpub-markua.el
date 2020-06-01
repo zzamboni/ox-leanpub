@@ -57,9 +57,6 @@
                      (table-cell . org-gfm-table-cell)
                      (table-row . org-gfm-table-row)
                      (table . org-markua-table)
-                     ;; (table . org-markua-table)
-                     ;; (table-cell . org-markua-table-cell)
-                     ;; (table-row . org-markua-table-row)
                      ;; Will not work with leanpub:
                      (export-block . org-markua-ignore))
   :options-alist
@@ -196,8 +193,8 @@ org-md-headline but without inserting the <a> anchors."
                                                '(:sample . "true")
                                              (when (string-equal elem "nobook")
                                                '(:book . "false")))) tags))))
-      (concat (org-markua-attribute-line headline info other-attrs)
-           (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info)))))
+    (concat (org-markua-attribute-line headline info other-attrs)
+            (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info)))))
 
 (defun org-markua-item (item contents info)
   "Transcode ITEM element into Markua format.
@@ -219,7 +216,7 @@ a communication channel."
               (concat bullet " "))
             (and contents
                  (concat (and tag ": ")
-                  (org-trim (replace-regexp-in-string "^" (make-string (1+ (length bullet)) ?\s) contents)))))))
+                         (org-trim (replace-regexp-in-string "^" (make-string (1+ (length bullet)) ?\s) contents)))))))
 
 (defun org-markua-inner-template (contents info)
   "Return complete document string after Markua conversion.
@@ -293,11 +290,11 @@ channel."
          (block-value (org-element-property :value src-block)))
     (when do-export
       (concat
-      (org-markua-attribute-line src-block info attrs)
-      (format "```\n%s%s```"
-              (org-remove-indentation block-value)
-              ;; Insert a newline if the block doesn't end with one
-              (if (string-suffix-p "\n" block-value) "" "\n"))))))
+       (org-markua-attribute-line src-block info attrs)
+       (format "```\n%s%s```"
+               (org-remove-indentation block-value)
+               ;; Insert a newline if the block doesn't end with one
+               (if (string-suffix-p "\n" block-value) "" "\n"))))))
 
 ;;; > ~~~~~~~~
 ;;; > 123.0
