@@ -53,7 +53,6 @@
 
 (require 'ox-leanpub-markua)
 (require 'ox-leanpub-book)
-(require 'ox-gfm)
 
 (org-leanpub-book-setup-menu-markua)
 
