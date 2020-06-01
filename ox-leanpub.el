@@ -3,8 +3,10 @@
 ;; Copyright (C) 2020 Diego Zamboni
 
 ;; Author: Diego Zamboni <diego@zzamboni.org>
-;; Keywords: org, leanpub
-;; Package-Requires: (ox-gfm cl-lib)
+;; Keywords: files, org, leanpub
+;; URL: https://gitlab.com/zzamboni/ox-leanpub
+;; Package-Version: 0.1
+;; Package-Requires: ((ox-gfm "20170628.2102") (emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.

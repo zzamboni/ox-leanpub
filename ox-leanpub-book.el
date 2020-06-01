@@ -3,7 +3,10 @@
 ;; Copyright (C) 2019-2020 Diego Zamboni
 
 ;;; Author: Diego Zamboni <diego@zzamboni.org>
-;;; Keywords: org, leanpub
+;; URL: https://gitlab.com/zzamboni/ox-leanpub
+;; Package-Version: 0.1
+;; Keywords: files, org, wp, markdown, leanpub
+;; Package-Requires: ((emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -78,26 +81,26 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(require 'cl-lib)
 (require 'ob-core)
 (require 'ox)
 
 ;;; Variable definitions
 
-(defvar org-leanpub-manuscript-dir "manuscript"
+(defvar org-leanpub-book-manuscript-dir "manuscript"
   "Directory where to store exported manuscript files for processing by Leanpub.
 Do not change this unless you know what you are doing, as this is
 the value expected by Leanpub.")
-(defvar org-leanpub-resources-dir "resources"
+(defvar org-leanpub-book-resources-dir "resources"
   "Directory where Leanpub expects to find attachments (images, etc.).
-Its value should be relative to `org-leanpub-manuscript-dir'.
+Its value should be relative to `org-leanpub-book-manuscript-dir'.
 Do not change this unless you know what you are doing, as this is
 the value expected by Leanpub.")
-(defvar org-leanpub-images-dir "images"
+(defvar org-leanpub-book-images-dir "images"
   "Directory in which you want to store images.
-This directory will be created under `org-leanpub-resources-dir',
+This directory will be created under `org-leanpub-book-resources-dir',
 and symlinked from both the main directory (where your org file
-is stored) and from `org-leanpub-resources-dir', so that the
+is stored) and from `org-leanpub-book-resources-dir', so that the
 images can be stored only once in your repository.  You can
 change this value but need to be consistent in using it with the
 correct value in your org file.")
@@ -109,11 +112,11 @@ correct value in your org file.")
   (org-export-define-derived-backend 'leanpub-book-markdown 'leanpub-markdown
     :menu-entry
     '(?L 1
-         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t)))
-          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t)))
-          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t 'current)))))
+         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t)))
+          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t)))
+          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t 'current)))))
     :options-alist
-    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
+    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
       (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil       t))))
 
@@ -124,11 +127,11 @@ correct value in your org file.")
   (org-export-define-derived-backend 'leanpub-book-markua 'leanpub-markua
     :menu-entry
     '(?M 1
-         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v)))
-          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t)))
-          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-export-book #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t 'current)))))
+         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v)))
+          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t)))
+          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t 'current)))))
     :options-alist
-    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-manuscript-dir t)
+    '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
       (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil       t))))
 
@@ -199,7 +202,7 @@ org document, but it only processes top level headings"
         (funcall export-function nil t)))))
 
 ;; Main export function
-(defun org-leanpub-export-book (export-function export-extension export-backend-symbol &optional subtreep visible-only do-sample-file only-subset subset-type)
+(defun org-leanpub-book-export (export-function export-extension export-backend-symbol &optional subtreep visible-only do-sample-file only-subset subset-type)
   "Exports buffer to a Leanpub book.
 
 The buffer is split by top level headlines, populating the
@@ -220,14 +223,14 @@ directly by the user."
          (original-point (point)))
 
     ;; Create necessary directories and symlinks, if needed
-    (let* ((img-dir-rel-to-outdir (concat (file-name-as-directory org-leanpub-resources-dir)
-                                          org-leanpub-images-dir))
+    (let* ((img-dir-rel-to-outdir (concat (file-name-as-directory org-leanpub-book-resources-dir)
+                                          org-leanpub-book-images-dir))
            (img-dir-rel-to-repo (concat (file-name-as-directory outdir)
                                         img-dir-rel-to-outdir))
-           (img-symlink-in-outdir (concat (file-name-as-directory outdir) org-leanpub-images-dir)))
+           (img-symlink-in-outdir (concat (file-name-as-directory outdir) org-leanpub-book-images-dir)))
       (make-directory img-dir-rel-to-repo t)
 
-      (make-symbolic-link img-dir-rel-to-repo org-leanpub-images-dir t)
+      (make-symbolic-link img-dir-rel-to-repo org-leanpub-book-images-dir t)
       (make-symbolic-link img-dir-rel-to-outdir img-symlink-in-outdir t))
 
     ;; Initialization: delete all the book definition and *matter.txt

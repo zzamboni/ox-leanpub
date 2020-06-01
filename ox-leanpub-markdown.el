@@ -2,9 +2,12 @@
 
 ;; Copyright (C) 2019-2020 Diego Zamboni, Juan Reyero
 
-;; Author: Diego Zamboni <diego@zzamboni.org>, Juan Reyero <juan _at! juanreyero.com>
-;; Keywords: org, wp, markdown, leanpub
-;; Package-Requires: (cl-lib)
+;; Author: Diego Zamboni <diego@zzamboni.org>
+;;         Juan Reyero <juan _at! juanreyero.com>
+;; URL: https://gitlab.com/zzamboni/ox-leanpub
+;; Package-Version: 0.1
+;; Keywords: files, org, wp, markdown, leanpub
+;; Package-Requires: ((ox-gfm "20170628.2102") (emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -57,26 +60,25 @@
             (lambda (a s v b)
               (if a (org-leanpub-markdown-export-to-markdown t s v)
                 (org-open-file (org-leanpub-markdown-export-to-markdown nil s v)))))))
-  :translate-alist '((fixed-width . org-leanpub-fixed-width-block)
-                     (example-block . org-leanpub-example-block)
-                     (special-block . org-leanpub-special-block)
-                     (src-block . org-leanpub-src-block)
-                     (plain-text . org-leanpub-plain-text)
-                     (inner-template . org-leanpub-inner-template)
-                     (footnote-reference . org-leanpub-footnote-reference)
-                     (headline . org-leanpub-headline)
-                     (link . org-leanpub-link)
-                     (latex-fragment . org-leanpub-latex-fragment)
-                     (line-break . org-leanpub-line-break)
-                     (table . org-leanpub-table)
-                     (table-cell . org-leanpub-table-cell)
-                     (table-row . org-leanpub-table-row)
-                     ;; Will not work with leanpub:
-                     (export-block . org-leanpub-ignore)))
+  :translate-alist '((fixed-width        . org-leanpub-markdown-fixed-width-block)
+                     (example-block      . org-leanpub-markdown-example-block)
+                     (special-block      . org-leanpub-markdown-special-block)
+                     (src-block          . org-leanpub-markdown-src-block)
+                     (plain-text         . org-leanpub-markdown-plain-text)
+                     (inner-template     . org-leanpub-markdown-inner-template)
+                     (footnote-reference . org-leanpub-markdown-footnote-reference)
+                     (headline           . org-leanpub-markdown-headline)
+                     (link               . org-leanpub-markdown-link)
+                     (latex-fragment     . org-leanpub-markdown-latex-fragment)
+                     (line-break         . org-leanpub-markdown-line-break)
+                     (table              . org-leanpub-markdown-table)
+                     (table-cell         . org-leanpub-markdown-table-cell)
+                     (table-row          . org-leanpub-markdown-table-row)
+                     (export-block       . org-leanpub-markdown-ignore)))
 
 ;;; Utility functions
 
-(defun org-leanpub-attribute-line (elem info &optional other-attrs nonewline)
+(defun org-leanpub-markdown--attribute-line (elem info &optional other-attrs nonewline)
   "Generate a Leanpub attribute line before an object.
 Collect #+NAME, #+CAPTION, and any attributes specified as :key
 value in the #+ATTR_LEANPUB line for `ELEM', and put them all together in a
@@ -111,20 +113,19 @@ produced attribute line."
                      (format "%s" lpattr-str)
                    (when (> (length lpattr-str-new) 0)
                      (format "{%s}"
-                             lpattr-str-new))))
-         )
+                             lpattr-str-new)))))
     (when (> (length output) 0)
       (concat
        output
        (unless nonewline "\n")))))
 
-(defun chomp-end (str)
+(defun org-leanpub-markdown--chomp-end (str)
   "Chomp tailing whitespace from STR."
   (replace-regexp-in-string (rx (* (any " \t\n")) eos)
                             ""
                             str))
 
-(defun org-leanpub-table (table contents info)
+(defun org-leanpub-markdown-table (table contents info)
   "Transcode a table object from Org to Markdown.
 `TABLE' contains the table object to export.  `CONTENTS' is nil.
 `INFO' is a plist holding contextual information.  Add an
@@ -137,20 +138,20 @@ info that you want to pass to markdown, like
 | second  | line       |
 | Third   | line       |"
   (concat
-   (org-leanpub-attribute-line table info)
+   (org-leanpub-markdown--attribute-line table info)
    (replace-regexp-in-string "^\s*\n" "" (org-export-data (org-element-contents table) info))))
 
-(defun org-leanpub-table-row (table-row contents info)
+(defun org-leanpub-markdown-table-row (table-row contents info)
   "Export a `TABLE-ROW'.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (format "| %s" (org-export-data contents info)))
 
-(defun org-leanpub-table-cell (table-cell contents info)
+(defun org-leanpub-markdown-table-cell (table-cell contents info)
   "Export a `TABLE-CELL'.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (format " %s |" (org-export-data contents info)))
 
-(defun org-leanpub-latex-fragment (latex-fragment contents info)
+(defun org-leanpub-markdown-latex-fragment (latex-fragment contents info)
   "Transcode a LATEX-FRAGMENT object from Org to Markdown.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (concat
@@ -201,14 +202,14 @@ org-md-headline but without inserting the <a> anchors."
         (concat (org-md--headline-title style level heading nil tags)
                 contents))))))
 
-(defun org-leanpub-headline (headline contents info)
+(defun org-leanpub-markdown-headline (headline contents info)
   "Adding the attribute line before each `HEADLINE'.
 CONTENTS is the contents of the headline.  INFO is a plist
 holding contextual information."
-  (concat (org-leanpub-attribute-line headline info nil t)
+  (concat (org-leanpub-markdown--attribute-line headline info nil t)
           (org-leanpub-markdown-headline-without-anchor headline contents info)))
 
-(defun org-leanpub-inner-template (contents info)
+(defun org-leanpub-markdown-inner-template (contents info)
   "Return complete document string after markdown conversion.
 CONTENTS is the transcoded contents string.  INFO is a plist
 holding export options.  Required in order to add footnote
@@ -231,7 +232,7 @@ definitions at the end."
                       (concat id (org-export-data def info)))))
                 definitions "\n\n"))))
 
-(defun org-leanpub-footnote-reference (footnote contents info)
+(defun org-leanpub-markdown-footnote-reference (footnote contents info)
   "Export a `FOOTNOTE'.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   ;; Leanpub does not like : in labels, so we replace them with underscores
@@ -243,12 +244,12 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
                  label
                (org-export-get-footnote-number footnote info))))))
 
-(defun org-leanpub-ignore (src-block contents info)
+(defun org-leanpub-markdown-ignore (src-block contents info)
   "Return an empty string for `SRC-BLOCK' elements which are ignored.
 CONTENTS and INFO are also ignored."
   "")
 
-(defun org-leanpub-plain-text (plain-text info)
+(defun org-leanpub-markdown-plain-text (plain-text info)
   "Return `PLAIN-TEXT' elements as-is.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   plain-text)
@@ -259,7 +260,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 ;;;     return math.pi * diameter
 ;;; longitude(10)
 ;;; ~~~~~~~~
-(defun org-leanpub-src-block (src-block contents info)
+(defun org-leanpub-markdown-src-block (src-block contents info)
   "Transcode SRC-BLOCK element into Markdown format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
@@ -267,7 +268,7 @@ channel."
                      (cons :linenos (when (org-element-property :number-lines src-block) "on"))))
         (block-value (org-element-property :value src-block)))
     (concat
-     (org-leanpub-attribute-line src-block info attrs)
+     (org-leanpub-markdown--attribute-line src-block info attrs)
      (format "~~~~~~~~\n%s%s~~~~~~~~"
              (org-remove-indentation block-value)
              ;; Insert a newline if the block doesn't end with one
@@ -276,20 +277,20 @@ channel."
 ;;; > ~~~~~~~~
 ;;; > 123.0
 ;;; > ~~~~~~~~
-(defun org-leanpub-example-block (src-block contents info)
+(defun org-leanpub-markdown-example-block (src-block contents info)
   "Transcode `SRC-BLOCK' element into Markdown format.
 `CONTENTS' is nil.  `INFO' is a plist used as a communication
 channel."
-  (org-leanpub-src-block src-block contents info))
+  (org-leanpub-markdown-src-block src-block contents info))
 
 ;;; > ~~~~~~~~
 ;;; > 123.0
 ;;; > ~~~~~~~~
-(defun org-leanpub-fixed-width-block (src-block contents info)
+(defun org-leanpub-markdown-fixed-width-block (src-block contents info)
   "Transcode `SRC-BLOCK' element into Markdown format.
 `CONTENTS' is nil.  `INFO' is a plist used as a communication
 channel."
-  (org-leanpub-src-block src-block contents info))
+  (org-leanpub-markdown-src-block src-block contents info))
 
 ;;; Export special blocks, mapping them to corresponding block types according to the LeanPub documentation at https://leanpub.com/help/manual#leanpub-auto-blocks-of-text.
 ;;; The supported block types and their conversions are listed in lp-block-mappings.
@@ -299,7 +300,7 @@ channel."
 ;;;     #+end_tip
 ;;; gets exported as
 ;;;     T> This is a tip
-(defun org-leanpub-special-block (special-block contents info)
+(defun org-leanpub-markdown-special-block (special-block contents info)
   "Transcode a SPECIAL-BLOCK element into Markdown format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
@@ -317,14 +318,14 @@ channel."
                 center "C"))
          (lp-char (plist-get lp-block-mappings (intern type))))
     (concat
-     (org-leanpub-attribute-line special-block info)
+     (org-leanpub-markdown--attribute-line special-block info)
      (replace-regexp-in-string
       "^" (concat lp-char "> ")
       (concat
        (when (> (length caption) 0) (format "### %s\n" caption))
-       (chomp-end (org-remove-indentation contents)))))))
+       (org-leanpub-markdown--chomp-end (org-remove-indentation contents)))))))
 
-(defun org-leanpub-link (link contents info)
+(defun org-leanpub-markdown-link (link contents info)
   "Transcode a LINK object into Markdown format.
 CONTENTS is the link's description.  INFO is a plist used as
 a communication channel."
@@ -354,7 +355,7 @@ a communication channel."
 
 ;;;; Line Break
 
-(defun org-leanpub-line-break (_line-break _contents info)
+(defun org-leanpub-markdown-line-break (_line-break _contents info)
   "Transcode a LINE-BREAK object from Org to Markdown.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   "  \n")
@@ -414,7 +415,7 @@ Return output file's name."
     (org-export-to-file 'leanpub-markdown outfile async subtreep visible-only)))
 
 ;;;###autoload
-(defun org-leanpub-publish-to-leanpub (plist filename pub-dir)
+(defun org-leanpub-markdown-publish-to-leanpub (plist filename pub-dir)
   "Publish an org file to leanpub.
 
 FILENAME is the filename of the Org file to be published.  PLIST

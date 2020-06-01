@@ -3,8 +3,10 @@
 ;; Copyright (C) 2019-2020 Diego Zamboni
 
 ;; Author: Diego Zamboni <diego@zzamboni.org>
-;; Keywords: org, wp, markdown, leanpub, markua
-;; Package-Requires: (ox-gfm cl-lib)
+;; URL: https://gitlab.com/zzamboni/ox-leanpub
+;; Package-Version: 0.1
+;; Keywords: files, org, wp, markdown, leanpub, markua
+;; Package-Requires: ((ox-gfm "20170628.2102") (emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -56,30 +58,29 @@
 	          (lambda (a s v b)
 	            (if a (org-leanpub-markua-export-to-markua t s v)
 		            (org-open-file (org-leanpub-markua-export-to-markua nil s v)))))))
-  :translate-alist '((fixed-width . org-markua-fixed-width-block)
-                     (example-block . org-markua-example-block)
-                     (special-block . org-markua-special-block)
-                     (src-block . org-markua-src-block)
-                     (plain-text . org-markua-plain-text)
-                     (inner-template . org-markua-inner-template)
-                     (footnote-reference . org-markua-footnote-reference)
-                     (headline . org-markua-headline)
-                     (item . org-markua-item)
-                     (link . org-markua-link)
-                     (latex-fragment . org-markua-latex-fragment)
-                     (line-break . org-markua-line-break)
-                     (paragraph . org-markua-paragraph)
-                     (table-cell . org-gfm-table-cell)
-                     (table-row . org-gfm-table-row)
-                     (table . org-markua-table)
-                     ;; Will not work with leanpub:
-                     (export-block . org-markua-ignore))
+  :translate-alist '((fixed-width        . org-leanpub-markua-fixed-width-block)
+                     (example-block      . org-leanpub-markua-example-block)
+                     (special-block      . org-leanpub-markua-special-block)
+                     (src-block          . org-leanpub-markua-src-block)
+                     (plain-text         . org-leanpub-markua-plain-text)
+                     (inner-template     . org-leanpub-markua-inner-template)
+                     (footnote-reference . org-leanpub-markua-footnote-reference)
+                     (headline           . org-leanpub-markua-headline)
+                     (item               . org-leanpub-markua-item)
+                     (link               . org-leanpub-markua-link)
+                     (latex-fragment     . org-leanpub-markua-latex-fragment)
+                     (line-break         . org-leanpub-markua-line-break)
+                     (paragraph          . org-leanpub-markua-paragraph)
+                     (table-cell         . org-gfm-table-cell)
+                     (table-row          . org-gfm-table-row)
+                     (table              . org-leanpub-markua-table)
+                     (export-block       . org-leanpub-markua-ignore))
   :options-alist
   '((:ox-markua-use-noweb-ref-as-caption "OX_MARKUA_USE_NOWEB_REF_AS_CAPTION" nil nil t)))
 
 ;;; Utility functions
 
-(defun org-markua-attribute-line (elem info &optional other-attrs nonewline)
+(defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline)
   "Generate a Leanpub attribute line before an object.
 Collect #+NAME, #+CAPTION, and any attributes specified as :key
 value in the #+ATTR_LEANPUB line for `ELEM', and put them all together in a
@@ -120,7 +121,7 @@ produced attribute line."
        output
        (unless nonewline "\n")))))
 
-(defun chomp-end (str)
+(defun org-leanpub-markua--chomp-end (str)
   "Chomp trailing whitespace from STR."
   (replace-regexp-in-string (rx (* (any " \t\n")) eos)
                             ""
@@ -128,14 +129,14 @@ produced attribute line."
 
 ;;;; Table
 
-(defun org-markua-table (table contents info)
+(defun org-leanpub-markua-table (table contents info)
   "Use ox-gfm to transcode TABLE element into Github Flavored Markdown table.
 CONTENTS is the contents of the table.  INFO is a plist holding
 contextual information.  We prepend the Leanpub attribute line if needed."
-  (concat (org-markua-attribute-line table info)
+  (concat (org-leanpub-markua--attribute-line table info)
           (org-gfm-table table contents info)))
 
-;; (defun org-markua-table (table contents info)
+;; (defun org-leanpub-markua-table (table contents info)
 ;;   "Transcode a table object from Org to Markua.
 ;; CONTENTS is nil.  INFO is a plist holding contextual information.
 
@@ -145,7 +146,7 @@ contextual information.  We prepend the Leanpub attribute line if needed."
 ;; | Third   | line       |
 ;; "
 ;;   (concat
-;;    (org-markua-attribute-line table info)
+;;    (org-leanpub-markua--attribute-line table info)
 ;;    (replace-regexp-in-string "^\s*\n" "" (org-export-data (org-element-contents table) info))))
 
 ;; (defun org-markua-table-row (table-row contents info)
@@ -154,7 +155,7 @@ contextual information.  We prepend the Leanpub attribute line if needed."
 ;; (defun org-markua-table-cell (table-cell contents info)
 ;;   (format " %s |" (org-export-data contents info)))
 
-(defun org-markua-latex-fragment (latex-fragment contents info)
+(defun org-leanpub-markua-latex-fragment (latex-fragment contents info)
   "Transcode a LATEX-FRAGMENT object from Org to Markua.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   (concat
@@ -205,7 +206,7 @@ org-md-headline but without inserting the <a> anchors."
 	      (concat (org-md--headline-title style level heading nil tags)
 		            contents))))))
 
-(defun org-markua-headline (headline contents info)
+(defun org-leanpub-markua-headline (headline contents info)
   "Add Leanpub attribute line before HEADLINE.
 This function also processes the `sample' and `nobook' tags and
 produces the appropriate Leanpub attributes.  CONTENTS is the
@@ -217,10 +218,10 @@ item contents.  INFO is a plist used as a communication channel."
                                                '(:sample . "true")
                                              (when (string-equal elem "nobook")
                                                '(:book . "false")))) tags))))
-    (concat (org-markua-attribute-line headline info other-attrs)
+    (concat (org-leanpub-markua--attribute-line headline info other-attrs)
             (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info)))))
 
-(defun org-markua-item (item contents info)
+(defun org-leanpub-markua-item (item contents info)
   "Transcode ITEM element into Markua format.
 CONTENTS is the item contents.  INFO is a plist used as
 a communication channel."
@@ -242,7 +243,7 @@ a communication channel."
                  (concat (and tag ": ")
                          (org-trim (replace-regexp-in-string "^" (make-string (1+ (length bullet)) ?\s) contents)))))))
 
-(defun org-markua-inner-template (contents info)
+(defun org-leanpub-markua-inner-template (contents info)
   "Return complete document string after Markua conversion.
 CONTENTS is the transcoded contents string.  INFO is a plist
 holding export options.  Required in order to add footnote
@@ -265,7 +266,7 @@ definitions at the end."
                       (concat id (org-export-data def info)))))
                 definitions "\n\n"))))
 
-(defun org-markua-footnote-reference (footnote contents info)
+(defun org-leanpub-markua-footnote-reference (footnote contents info)
   "Export a `FOOTNOTE'.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   ;; Leanpub does not like : in labels, so we replace them with underscores
@@ -277,7 +278,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
                  label
                (org-export-get-footnote-number footnote info))))))
 
-(defun org-markua-ignore (src-block contents info)
+(defun org-leanpub-markua-ignore (src-block contents info)
   "Return an empty string for `SRC-BLOCK' elements which are ignored.
 CONTENTS and INFO are also ignored."
   "")
@@ -289,11 +290,11 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 
 ;;; EOLs are removed from paragraphs in Markua
 
-(defun org-markua-paragraph (paragraph contents info)
+(defun org-leanpub-markua-paragraph (paragraph contents info)
   "Transcode a PARAGRAPH element from Org to Markua.
 CONTENTS is the contents of the paragraph, as a string.  INFO is
 the plist used as a communication channel."
-  (concat (org-markua-attribute-line paragraph info)
+  (concat (org-leanpub-markua--attribute-line paragraph info)
           (replace-regexp-in-string "{{markua:linebreak}}" "\n"
                                     (replace-regexp-in-string "\n" " " contents)
                                     nil 'literal)))
@@ -308,7 +309,7 @@ the plist used as a communication channel."
 ;;;     return math.pi * diameter
 ;;; longitude(10)
 ;;; ~~~~~~~~
-(defun org-markua-src-block (src-block contents info)
+(defun org-leanpub-markua-src-block (src-block contents info)
   "Transcode SRC-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
@@ -321,7 +322,7 @@ channel."
          (block-value (org-element-property :value src-block)))
     (when do-export
       (concat
-       (org-markua-attribute-line src-block info attrs)
+       (org-leanpub-markua--attribute-line src-block info attrs)
        (format "```\n%s%s```"
                (org-remove-indentation block-value)
                ;; Insert a newline if the block doesn't end with one
@@ -330,20 +331,20 @@ channel."
 ;;; > ~~~~~~~~
 ;;; > 123.0
 ;;; > ~~~~~~~~
-(defun org-markua-example-block (src-block contents info)
+(defun org-leanpub-markua-example-block (src-block contents info)
   "Transcode SRC-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
-  (org-markua-src-block src-block contents info))
+  (org-leanpub-markua-src-block src-block contents info))
 
 ;;; > ~~~~~~~~
 ;;; > 123.0
 ;;; > ~~~~~~~~
-(defun org-markua-fixed-width-block (src-block contents info)
+(defun org-leanpub-markua-fixed-width-block (src-block contents info)
   "Transcode SRC-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
-  (org-markua-src-block src-block contents info))
+  (org-leanpub-markua-src-block src-block contents info))
 
 ;;; Export special blocks, mapping them to corresponding block types according to the LeanPub documentation at https://leanpub.com/help/manual#leanpub-auto-blocks-of-text.
 ;;; The supported block types and their conversions are listed in lp-block-mappings.
@@ -353,7 +354,7 @@ channel."
 ;;;     #+end_tip
 ;;; gets exported as
 ;;;     T> This is a tip
-(defun org-markua-special-block (special-block contents info)
+(defun org-leanpub-markua-special-block (special-block contents info)
   "Transcode a SPECIAL-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
@@ -371,14 +372,14 @@ channel."
                 center "C"))
          (lp-char (plist-get lp-block-mappings (intern type))))
     (concat
-     (org-markua-attribute-line special-block info)
+     (org-leanpub-markua--attribute-line special-block info)
      (replace-regexp-in-string
       "^" (concat lp-char "> ")
       (concat
        (when (> (length caption) 0) (format "### %s\n" caption))
-       (chomp-end (org-remove-indentation contents)))))))
+       (org-leanpub-markua--chomp-end (org-remove-indentation contents)))))))
 
-(defun org-markua-link (link contents info)
+(defun org-leanpub-markua-link (link contents info)
   "Transcode a LINK object into Markua format.
 CONTENTS is the link's description.  INFO is a plist used as
 a communication channel."
@@ -408,7 +409,7 @@ a communication channel."
 
 ;;;; Line Break
 
-(defun org-markua-line-break (_line-break _contents info)
+(defun org-leanpub-markua-line-break (_line-break _contents info)
   "Transcode a LINE-BREAK object from Org to Markua.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   "{{markua:linebreak}}")
