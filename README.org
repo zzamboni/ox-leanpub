@@ -1,4 +1,4 @@
-#+title: ox-leanpub.el
+#+title: ox-leanpub: A Leanpub book exporter for Org-mode
 #+author: Diego Zamboni
 #+email: diego@zzamboni.org
 
