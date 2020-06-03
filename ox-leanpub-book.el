@@ -104,6 +104,8 @@ is stored) and from `org-leanpub-book-resources-dir', so that the
 images can be stored only once in your repository.  You can
 change this value but need to be consistent in using it with the
 correct value in your org file.")
+(defvar org-leanpub-matter-tags '("frontmatter" "mainmatter" "backmatter")
+  "Special front/main/backmatter tags recognized by Leanpub.")
 
 (defun org-leanpub-book-setup-menu-markdown ()
   "Set up the Book export menu entries within the Leanpub Markdown menu."
@@ -112,9 +114,9 @@ correct value in your org file.")
   (org-export-define-derived-backend 'leanpub-book-markdown 'leanpub-markdown
     :menu-entry
     '(?L 1
-         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t)))
-          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t)))
-          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t 'current)))))
+         ((?b "Book: Whole book"      (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t)))
+          (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t)))
+          (?c "Book: Current chapter" (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
@@ -127,9 +129,9 @@ correct value in your org file.")
   (org-export-define-derived-backend 'leanpub-book-markua 'leanpub-markua
     :menu-entry
     '(?M 1
-         ((?b "Book: Whole book"      (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v)))
-          (?s "Book: Subset"          (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t)))
-          (?c "Book: Current chapter" (lambda (a s v b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t 'current)))))
+         ((?b "Book: Whole book"      (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v)))
+          (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t)))
+          (?c "Book: Current chapter" (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
@@ -143,25 +145,37 @@ Concatenates `OUTDIR' with `F' using the correct separator, to
 return a relative pathname."
   (concat (file-name-as-directory outdir) f))
 
-(defun org-leanpub-book--add-to-bookfiles (line &optional always only-subset do-sample-file tags produce-subset is-subset outdir)
-  "Add a `LINE' to the correct output files, according to the current settings."
+(defun org-leanpub-book--add-to-bookfiles (outdir line &optional always do-sample-file
+                                                  do-subset only-subset is-subset tags)
+  "Add a `LINE' to the correct book files, terminated with an EOL.
+OUTDIR is the directory to which the files should be written.  If
+ALWAYS is t, the line is inconditionally added regardless of
+tags, but still subject to DO-SAMPLE-FILE and DO-SUBSET,
+which govern whether those files are being written at all.
+ONLY-SUBSET indicates whether only the Subset.txt file should be
+updated.  IS-SUBSET indicates whether the current chapter should
+be part of Subset.txt.  TAGS contains the tags of the current
+chapter, which is used to check for the `sample' tag."
   (let ((line-n (concat line "\n")))
     (unless only-subset
       (append-to-file line-n nil (org-leanpub-book--outfile outdir "Book.txt"))
       (when (and do-sample-file (or (member "sample" tags) always))
         (append-to-file line-n nil (org-leanpub-book--outfile outdir "Sample.txt"))))
-    (when (and produce-subset (or is-subset always))
+    (when (and do-subset (or is-subset always))
       (append-to-file line-n nil (org-leanpub-book--outfile outdir "Subset.txt")))))
 
-(defun org-leanpub-book--process-chapter (outdir export-function export-extension ignore-stored-filenames
-                                                 original-point subset-mode matter-tags only-subset
-                                                 do-sample-file produce-subset)
+(defun org-leanpub-book--process-chapter (info outdir original-point
+                                               export-function export-extension
+                                               do-sample-file only-subset subset-type)
   "Main Book chapter export function.
 Processes an org element, and exports it if it's a top level
 heading.  This function gets called for all the elements in the
-org document, but it only processes top level headings"
+org document, but it only processes top level headings."
   (when (and (org-at-heading-p) (= (nth 1 (org-heading-components)) 1))
     (let* ((current-subtree (org-element-at-point))
+           (ignore-stored-filenames (plist-get info :leanpub-book-recompute-filenames))
+           (subset-mode (or subset-type (intern (plist-get info :leanpub-book-write-subset))))
+           (do-subset (and subset-mode (not (eq subset-mode 'none))))
            ;; Get all the information about the current subtree and heading
            (id (or (org-element-property :name      current-subtree)
                    (org-element-property :ID        current-subtree)
@@ -184,18 +198,19 @@ org document, but it only processes top level headings"
                           (and (equal subset-mode 'sample) (member "sample" tags))
                           (and (equal subset-mode 'current) point-in-subtree))))
       ;; add appropriate tag for front/main/backmatter for tagged headlines
-      (dolist (tag matter-tags)
+      (dolist (tag org-leanpub-matter-tags)
         (when (member tag tags)
           (let* ((fname (concat tag ".txt")))
             (append-to-file (concat "{" tag "}\n") nil (org-leanpub-book--outfile outdir fname))
-            (org-leanpub-book--add-to-bookfiles fname t only-subset do-sample-file tags produce-subset is-subset outdir))))
+            (org-leanpub-book--add-to-bookfiles outdir fname t do-sample-file do-subset only-subset is-subset tags))))
       (when (or (not only-subset) is-subset)
         ;; set filename only if the property is missing or different from the correct filename
         (when (or (not stored-filename)
                   (and ignore-stored-filenames (not (string= stored-filename computed-filename))))
           (org-entry-put (point) "EXPORT_FILE_NAME" computed-filename))
         ;; add to the filename to the book files
-        (org-leanpub-book--add-to-bookfiles (file-name-nondirectory final-filename) nil only-subset do-sample-file tags produce-subset is-subset outdir)
+        (org-leanpub-book--add-to-bookfiles outdir (file-name-nondirectory final-filename)
+                                            nil do-sample-file do-subset only-subset is-subset tags)
         ;; select the subtree so that its headline is also exported (otherwise we get just the body)
         (org-mark-subtree)
         (message (format "Exporting %s (%s)" final-filename title))
@@ -206,9 +221,30 @@ org document, but it only processes top level headings"
   "Exports buffer to a Leanpub book.
 
 The buffer is split by top level headlines, populating the
-corresponding book-specification files.  This function is used
-internally by `ox-leanpub-book' and should normally not be called
-directly by the user."
+corresponding book-specification files.
+
+EXPORT-FUNCTION is a regular Org exporter function, which must
+receives three optional arguments ASYNC (which is always passed
+as nil), SUBTREEP and VISIBLE-ONLY (which are passed unchanged
+from the corresponding arguments received).  In particular, the
+SUBTREEP option must be obeyed for the chapter-by-chapter export
+to work.  Files will be created with the extension
+EXPORT-EXTENSION.  EXPORT-BACKEND-SYMBOL is the name (symbol) of
+the exporter to use.
+
+DO-SAMPLE-FILE specifies whether the `Sample.txt' file should be
+generated (in Leanpub this is only needed for Markdown books, for
+Markua it is handled through conditional directives in the text
+itself).  ONLY-SUBSET specified whether only the book subset
+should be exported (without the entire book), and SUBSET-TYPE
+indicates the type of subset which should be produced:
+`none' (not created), `tagged' (use all chapters tagged
+`subset'), `all' (all the chapters), `sample' (chapters tagged
+`sample'), `current' (chapter where the cursor is at the moment
+of the export).
+
+This function is used internally by `ox-leanpub-book' and should
+normally not be called directly by the user."
   (interactive)
   (let* ((info (org-combine-plists
                 (org-export--get-export-attributes
@@ -216,10 +252,6 @@ directly by the user."
                 (org-export--get-buffer-attributes)
                 (org-export-get-environment export-backend-symbol subtreep)))
          (outdir (plist-get info :leanpub-book-output-dir))
-         (subset-mode (or subset-type (intern (plist-get info :leanpub-book-write-subset))))
-         (ignore-stored-filenames (plist-get info :leanpub-book-recompute-filenames))
-         (produce-subset (and subset-mode (not (eq subset-mode 'none))))
-         (matter-tags '("frontmatter" "mainmatter" "backmatter"))
          (original-point (point)))
 
     ;; Create necessary directories and symlinks, if needed
@@ -237,18 +269,18 @@ directly by the user."
     ;; files, they get recreated as needed
     (dolist (fname (mapcar (lambda (s) (concat s ".txt"))
                            (append (if only-subset '("Subset") '("Book" "Sample" "Subset"))
-                                   matter-tags)))
+                                   org-leanpub-matter-tags)))
       (delete-file (org-leanpub-book--outfile outdir fname)))
 
     ;; Loop through all the elements in the document, exporting them
     ;; as needed, except for those tagged with "noexport"
     (save-mark-and-excursion
-      (org-map-entries (lambda ()
-                         (org-leanpub-book--process-chapter
-                          outdir export-function export-extension
-                          ignore-stored-filenames original-point subset-mode
-                          matter-tags only-subset do-sample-file produce-subset))
-                       "-noexport"))
+      (org-map-entries
+       (lambda ()
+         (org-leanpub-book--process-chapter info outdir original-point
+                                            export-function export-extension
+                                            do-sample-file only-subset subset-type))
+       "-noexport"))
 
     (message (format "LeanPub export to %s/ finished" outdir))))
 
