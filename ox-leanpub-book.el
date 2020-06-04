@@ -170,51 +170,57 @@ chapter, which is used to check for the `sample' tag."
   "Main Book chapter export function.
 Processes an org element, and exports it if it's a top level
 heading.  This function gets called for all the elements in the
-org document, but it only processes top level headings."
-  (when (and (org-at-heading-p) (= (nth 1 (org-heading-components)) 1))
-    (let* ((current-subtree (org-element-at-point))
-           (ignore-stored-filenames (plist-get info :leanpub-book-recompute-filenames))
-           (subset-mode (or subset-type (intern (plist-get info :leanpub-book-write-subset))))
-           (do-subset (and subset-mode (not (eq subset-mode 'none))))
-           ;; Get all the information about the current subtree and heading
-           (id (or (org-element-property :name      current-subtree)
-                   (org-element-property :ID        current-subtree)
-                   (org-element-property :CUSTOM_ID current-subtree)))
-           (title (or (nth 4 (org-heading-components)) ""))
-           (tags (org-get-tags))
-           ;; Compute or get (from EXPORT_FILE_NAME) the output filename
-           (basename (concat (replace-regexp-in-string "[^[:alnum:]]" "-" (downcase (or id title)))
-                             export-extension))
-           (computed-filename (org-leanpub-book--outfile outdir basename))
-           (stored-filename (org-entry-get (point) "EXPORT_FILE_NAME"))
-           (final-filename (if ignore-stored-filenames computed-filename (or stored-filename computed-filename)))
-           ;; Was the cursor in the current subtree when export started?
-           (point-in-subtree (<= (org-element-property :begin current-subtree)
-                                 original-point
-                                 (1- (org-element-property :end current-subtree))))
-           ;; Is this element part of the export subset (if any)?
-           (is-subset (or (equal subset-mode 'all)
-                          (and (equal subset-mode 'tagged) (member "subset" tags))
-                          (and (equal subset-mode 'sample) (member "sample" tags))
-                          (and (equal subset-mode 'current) point-in-subtree))))
-      ;; add appropriate tag for front/main/backmatter for tagged headlines
-      (dolist (tag org-leanpub-matter-tags)
-        (when (member tag tags)
-          (let* ((fname (concat tag ".txt")))
-            (append-to-file (concat "{" tag "}\n") nil (org-leanpub-book--outfile outdir fname))
-            (org-leanpub-book--add-to-bookfiles outdir fname t do-sample-file do-subset only-subset is-subset tags))))
-      (when (or (not only-subset) is-subset)
-        ;; set filename only if the property is missing or different from the correct filename
-        (when (or (not stored-filename)
-                  (and ignore-stored-filenames (not (string= stored-filename computed-filename))))
-          (org-entry-put (point) "EXPORT_FILE_NAME" computed-filename))
-        ;; add to the filename to the book files
-        (org-leanpub-book--add-to-bookfiles outdir (file-name-nondirectory final-filename)
-                                            nil do-sample-file do-subset only-subset is-subset tags)
-        ;; select the subtree so that its headline is also exported (otherwise we get just the body)
-        (org-mark-subtree)
-        (message (format "Exporting %s (%s)" final-filename title))
-        (funcall export-function nil t)))))
+org document, but it only processes top level headings.
+
+INFO is used for context and document information.  OUTDIR is the
+directory where the output should be stored.  ORIGINAL-POINT is
+the cursor position before the export started (used for the
+\"current chapter\" export).  EXPORT-FUNCTION, EXPORT-EXTENSION,
+DO-SAMPLE-FILE, ONLY-SUBSET and SUBSET-TYPE are as passed to
+`org-leanpub-book-export'"
+  (let* ((current-subtree (org-element-at-point))
+         (ignore-stored-filenames (plist-get info :leanpub-book-recompute-filenames))
+         (subset-mode (or subset-type (intern (plist-get info :leanpub-book-write-subset))))
+         (do-subset (and subset-mode (not (eq subset-mode 'none))))
+         ;; Get all the information about the current subtree and heading
+         (id (or (org-element-property :name      current-subtree)
+                 (org-element-property :ID        current-subtree)
+                 (org-element-property :CUSTOM_ID current-subtree)))
+         (title (or (nth 4 (org-heading-components)) ""))
+         (tags (org-get-tags))
+         ;; Compute or get (from EXPORT_FILE_NAME) the output filename
+         (basename (concat (replace-regexp-in-string "[^[:alnum:]]" "-" (downcase (or id title)))
+                           export-extension))
+         (computed-filename (org-leanpub-book--outfile outdir basename))
+         (stored-filename (org-entry-get (point) "EXPORT_FILE_NAME"))
+         (final-filename (if ignore-stored-filenames computed-filename (or stored-filename computed-filename)))
+         ;; Was the cursor in the current subtree when export started?
+         (point-in-subtree (<= (org-element-property :begin current-subtree)
+                               original-point
+                               (1- (org-element-property :end current-subtree))))
+         ;; Is this element part of the export subset (if any)?
+         (is-subset (or (equal subset-mode 'all)
+                        (and (equal subset-mode 'tagged) (member "subset" tags))
+                        (and (equal subset-mode 'sample) (member "sample" tags))
+                        (and (equal subset-mode 'current) point-in-subtree))))
+    ;; add appropriate tag for front/main/backmatter for tagged headlines
+    (dolist (tag org-leanpub-matter-tags)
+      (when (member tag tags)
+        (let* ((fname (concat tag ".txt")))
+          (append-to-file (concat "{" tag "}\n") nil (org-leanpub-book--outfile outdir fname))
+          (org-leanpub-book--add-to-bookfiles outdir fname t do-sample-file do-subset only-subset is-subset tags))))
+    (when (or (not only-subset) is-subset)
+      ;; set filename only if the property is missing or different from the correct filename
+      (when (or (not stored-filename)
+                (and ignore-stored-filenames (not (string= stored-filename computed-filename))))
+        (org-entry-put (point) "EXPORT_FILE_NAME" computed-filename))
+      ;; add to the filename to the book files
+      (org-leanpub-book--add-to-bookfiles outdir (file-name-nondirectory final-filename)
+                                          nil do-sample-file do-subset only-subset is-subset tags)
+      ;; select the subtree so that its headline is also exported (otherwise we get just the body)
+      (org-mark-subtree)
+      (message (format "Exporting %s (%s)" final-filename title))
+      (funcall export-function nil t))))
 
 ;; Main export function
 (defun org-leanpub-book-export (export-function export-extension export-backend-symbol &optional subtreep visible-only do-sample-file only-subset subset-type)
@@ -272,14 +278,15 @@ normally not be called directly by the user."
                                    org-leanpub-matter-tags)))
       (delete-file (org-leanpub-book--outfile outdir fname)))
 
-    ;; Loop through all the elements in the document, exporting them
+    ;; Loop through all the top-level headings in the document, exporting them
     ;; as needed, except for those tagged with "noexport"
     (save-mark-and-excursion
       (org-map-entries
        (lambda ()
-         (org-leanpub-book--process-chapter info outdir original-point
-                                            export-function export-extension
-                                            do-sample-file only-subset subset-type))
+         (when (and (org-at-heading-p) (= (nth 1 (org-heading-components)) 1))
+           (org-leanpub-book--process-chapter info outdir original-point
+                                              export-function export-extension
+                                              do-sample-file only-subset subset-type)))
        "-noexport"))
 
     (message (format "LeanPub export to %s/ finished" outdir))))
