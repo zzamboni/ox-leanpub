@@ -6,13 +6,12 @@
 ;; URL: https://gitlab.com/zzamboni/ox-leanpub
 ;; Package-Version: 0.1
 ;; Keywords: files, org, wp, markdown, leanpub, markua
-;; Package-Requires: ((ox-gfm "20170628.2102") (emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
 
-;;     http://www.apache.org/licenses/LICENSE-2.0
+;;     https://www.apache.org/licenses/LICENSE-2.0
 
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
@@ -101,8 +100,8 @@ produced attribute line."
          (lpattr (append (org-babel-parse-header-arguments lpattr-str) other-attrs init))
          (oldstyle (string-prefix-p "{" lpattr-str))
          (printed '())
-         (lpattr-str-new (mapconcat 'identity
-                                    (cl-remove-if 'null
+         (lpattr-str-new (mapconcat #'identity
+                                    (cl-remove-if #'null
                                                (mapcar (lambda (elem)
                                                          (let* ((keysym (car elem))
                                                                 (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
@@ -169,7 +168,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
   "Transcode HEADLINE element into Markua format.
 CONTENTS is the headline contents.  INFO is a plist used as
 a communication channel.  This is the same function as
-org-md-headline but without inserting the <a> anchors."
+`org-md-headline' but without inserting the <a> anchors."
   (unless (org-element-property :footnote-section-p headline)
     (let* ((level (org-export-get-relative-level headline info))
 	         (title (org-export-data (org-element-property :title headline) info))
