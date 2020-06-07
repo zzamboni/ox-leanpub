@@ -6,7 +6,7 @@
 ;; URL: https://gitlab.com/zzamboni/ox-leanpub
 ;; Package-Version: 0.1
 ;; Keywords: files, org, wp, markdown, leanpub
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((org "9.1") (emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.

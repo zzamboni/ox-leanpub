@@ -7,6 +7,7 @@
 ;; URL: https://gitlab.com/zzamboni/ox-leanpub
 ;; Package-Version: 0.1
 ;; Keywords: files, org, wp, markdown, leanpub
+;; Package-Requires: ((org "9.1") (emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -175,7 +176,7 @@ a communication channel.  This is the same function as
            (tags (and (plist-get info :with-tags)
                       (let ((tag-list (org-export-get-tags headline info)))
                         (and tag-list
-                             (concat "     " (org-make-tag-string tag-list))))))
+                             (concat "     " (format ":%s:" (mapconcat #'identity tag-list ":")))))))
            (priority
             (and (plist-get info :with-priority)
                  (let ((char (org-element-property :priority headline)))
