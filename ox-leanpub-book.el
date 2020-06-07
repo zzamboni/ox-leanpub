@@ -12,7 +12,7 @@
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
 
-;;     http://www.apache.org/licenses/LICENSE-2.0
+;;     https://www.apache.org/licenses/LICENSE-2.0
 
 ;; Unless required by applicable law or agreed to in writing, software
 ;; distributed under the License is distributed on an "AS IS" BASIS,
@@ -219,7 +219,7 @@ DO-SAMPLE-FILE, ONLY-SUBSET and SUBSET-TYPE are as passed to
                                           nil do-sample-file do-subset only-subset is-subset tags)
       ;; select the subtree so that its headline is also exported (otherwise we get just the body)
       (org-mark-subtree)
-      (message (format "Exporting %s (%s)" final-filename title))
+      (message "Exporting %s (%s)" final-filename title)
       (funcall export-function nil t))))
 
 ;; Main export function
@@ -289,7 +289,7 @@ normally not be called directly by the user."
                                               do-sample-file only-subset subset-type)))
        "-noexport"))
 
-    (message (format "LeanPub export to %s/ finished" outdir))))
+    (message "LeanPub export to %s/ finished" outdir)))
 
 (provide 'ox-leanpub-book)
 
