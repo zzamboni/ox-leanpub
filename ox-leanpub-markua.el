@@ -6,7 +6,7 @@
 ;; URL: https://gitlab.com/zzamboni/ox-leanpub
 ;; Package-Version: 0.1
 ;; Keywords: files, org, wp, markdown, leanpub, markua
-;; Package-Requires: ((org "9.1") (ox-gfm "20170628.2102") (emacs "26.1"))
+;; Package-Requires: ((org "9.1") (ox-gfm "1.0") (emacs "26.1"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -135,25 +135,6 @@ CONTENTS is the contents of the table.  INFO is a plist holding
 contextual information.  We prepend the Leanpub attribute line if needed."
   (concat (org-leanpub-markua--attribute-line table info)
           (org-gfm-table table contents info)))
-
-;; (defun org-leanpub-markua-table (table contents info)
-;;   "Transcode a table object from Org to Markua.
-;; CONTENTS is nil.  INFO is a plist holding contextual information.
-
-;; | a table | second col |
-;; |---------+------------|
-;; | second  | line       |
-;; | Third   | line       |
-;; "
-;;   (concat
-;;    (org-leanpub-markua--attribute-line table info)
-;;    (replace-regexp-in-string "^\s*\n" "" (org-export-data (org-element-contents table) info))))
-
-;; (defun org-markua-table-row (table-row contents info)
-;;   (format "| %s" (org-export-data contents info)))
-
-;; (defun org-markua-table-cell (table-cell contents info)
-;;   (format " %s |" (org-export-data contents info)))
 
 (defun org-leanpub-markua-latex-fragment (latex-fragment _contents _info)
   "Transcode a LATEX-FRAGMENT object from Org to Markua.
@@ -299,7 +280,7 @@ the plist used as a communication channel."
                                     (replace-regexp-in-string "\n" " " contents)
                                     nil 'literal)))
 
-(defun org-markua-get-header-arg (arg src-block)
+(defun org-leanpub-markua--get-header-arg (arg src-block)
   "Get and return a header `ARG' from a `SRC-BLOCK'."
   (alist-get arg (org-babel-parse-header-arguments (org-element-property :parameters src-block))))
 
@@ -314,8 +295,8 @@ the plist used as a communication channel."
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (let* ((use-noweb-ref (plist-get info :ox-markua-use-noweb-ref-as-caption))
-         (do-export (not (member (org-markua-get-header-arg :exports src-block) '("results" "none"))))
-         (noweb-ref (org-markua-get-header-arg :noweb-ref src-block))
+         (do-export (not (member (org-leanpub-markua--get-header-arg :exports src-block) '("results" "none"))))
+         (noweb-ref (org-leanpub-markua--get-header-arg :noweb-ref src-block))
          (attrs (list (cons :format (org-element-property :language src-block))
                       (cons :line-numbers (when (org-element-property :number-lines src-block) "true"))
                       (when use-noweb-ref (cons :caption (when noweb-ref (format "«%s»≡" noweb-ref))))))
@@ -467,17 +448,6 @@ Return output file's name."
   (interactive)
   (let ((outfile (org-export-output-file-name ".markua" subtreep)))
     (org-export-to-file 'leanpub-markua outfile async subtreep visible-only)))
-
-;;;###autoload
-(defun org-markua-publish-to-leanpub (plist filename pub-dir)
-  "Publish an org file to leanpub in Markua format.
-
-FILENAME is the filename of the Org file to be published.  PLIST
-is the property list for the given project.  PUB-DIR is the
-publishing directory.
-
-Return output file name."
-  (org-publish-org-to 'leanpub-markua filename ".markua" plist pub-dir))
 
 (provide 'ox-leanpub-markua)
 
