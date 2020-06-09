@@ -264,7 +264,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 CONTENTS and INFO are also ignored."
   "")
 
-(defun org-leanpub-plain-text (plain-text _info)
+(defun org-leanpub-markua-plain-text (plain-text _info)
   "Return `PLAIN-TEXT' elements as-is.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   plain-text)

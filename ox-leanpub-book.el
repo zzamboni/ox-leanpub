@@ -104,7 +104,7 @@ is stored) and from `org-leanpub-book-resources-dir', so that the
 images can be stored only once in your repository.  You can
 change this value but need to be consistent in using it with the
 correct value in your org file.")
-(defvar org-leanpub-matter-tags '("frontmatter" "mainmatter" "backmatter")
+(defvar org-leanpub-book-matter-tags '("frontmatter" "mainmatter" "backmatter")
   "Special front/main/backmatter tags recognized by Leanpub.")
 
 (defun org-leanpub-book-setup-menu-markdown ()
@@ -204,7 +204,7 @@ DO-SAMPLE-FILE, ONLY-SUBSET and SUBSET-TYPE are as passed to
                         (and (equal subset-mode 'sample) (member "sample" tags))
                         (and (equal subset-mode 'current) point-in-subtree))))
     ;; add appropriate tag for front/main/backmatter for tagged headlines
-    (dolist (tag org-leanpub-matter-tags)
+    (dolist (tag org-leanpub-book-matter-tags)
       (when (member tag tags)
         (let* ((fname (concat tag ".txt")))
           (append-to-file (concat "{" tag "}\n") nil (org-leanpub-book--outfile outdir fname))
@@ -275,7 +275,7 @@ normally not be called directly by the user."
     ;; files, they get recreated as needed
     (dolist (fname (mapcar (lambda (s) (concat s ".txt"))
                            (append (if only-subset '("Subset") '("Book" "Sample" "Subset"))
-                                   org-leanpub-matter-tags)))
+                                   org-leanpub-book-matter-tags)))
       (delete-file (org-leanpub-book--outfile outdir fname)))
 
     ;; Loop through all the top-level headings in the document, exporting them
