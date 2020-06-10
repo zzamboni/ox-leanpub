@@ -47,7 +47,7 @@ By default, the =ox-leanpub= module sets things up for exporting books in Markua
     :after org)
 #+end_src
 
-If you want to export your books in LFM format, you need to additionally load the =ox-leanpub-markdown= exporter and tell =ox-leanpub-book= to set up the corresponding menu entries, as follows:
+If you really want to export your books in LFM format, you need to additionally load the =ox-leanpub-markdown= exporter and tell =ox-leanpub-book= to set up the corresponding menu entries, as follows:
 
 #+begin_src emacs-lisp
   (use-package ox-leanpub
@@ -60,13 +60,33 @@ If you want to export your books in LFM format, you need to additionally load th
 
 * Usage
 
-Depending on whether you load the Markua or Markdown exporter, you will see two new sections in Org's export menu (~C-c C-e~), called "Export to Leanpub Markua" and "Export to Leanpub Markdown", with options to export to a file or a temporary buffer. Additionally, the =ox-leanpub-book= module adds three items in the corresponding section:
+Depending on whether you load the Markua or Markdown exporter, you will see the corresponding new sections in Org's export menu (~C-c C-e~), called "Export to Leanpub Markua" and "Export to Leanpub Markdown", with options to export to a file or a temporary buffer. Additionally, the =ox-leanpub-book= module adds three items in the corresponding section:
 
 - "Book: Whole book", which exports the whole book as one-file-per-chapter;
 - "Book: Subset", which exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
 - "Book: Current chapter" to explicitly export only the current chapter to its own file. This also updates =Subset.txt=, so it can be used to preview the current chapter.
 
-The book files are populated as follows:
+The first time you do a book export, the following directory and symlink structure will be created:
+
+#+begin_example
+  .
+  ├── images -> manuscript/resources/images
+  └── manuscript
+      ├── images -> resources/images
+      └── resources
+          └── images
+#+end_example
+
+In short, this is what the export operation does:
+
+- Creates a =manuscript= folder if needed, under which all other files are stored.
+  - A =resources/images= directory is created inside =manuscript=, as required by the Leanpub Markua processor (this is not required by the LFM processor, but the same structure is used).
+  - Symlinks to the =images= directory are created both from the top-level directory, and from the =manuscript= directory, to allow referencing the same image files both from the Org file and from the exported Markua files.
+- Exports one =.markua= or =.md= file for each top-level header (chapter) in your book.
+- Creates the =Book.txt= file with the filenames corresponding to the chapters of your book.
+  - Depending on the exporter settings (see below), the =Subset.txt= and =Sample.txt= files may also be created.
+
+The book files are created inside =manuscript= and populated as follows:
 
 - =Book.txt= with all chapters, except those tagged with =noexport=.
 - =Sample.txt= with all chapters tagged with =sample=. *Note:* this file is only created when exporting LFM. In Markua output, all headings tagged with =sample= are given the =sample: true= attribute as [[https://leanpub.com/markua/read#conditional-inclusion][documented in the Markua manual]].
@@ -78,9 +98,10 @@ The book files are populated as follows:
   - =current=: export the current chapter (where the cursor is at the moment of the export) as the contents of =Subset.txt=.
 
 The exported chapter files are named as follows:
-- If the heading has an =EXPORT_FILE_NAME= property, it is used (note: this filename should already specify the output directory, e.g. =manuscript/chapter.markua=), unless the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= file property is set.
-- If the heading has a =NAME=, =ID= or =CUSTOM_ID= property, it is used as the base filename, and used to construct the filename inside =manuscript/=. The final filename is stored in the =EXPORT_FILE_NAME= property.
-- Othewise, the filename is generated based on the heading title by lowercasing it and replacing all non-alphanumeric characters with hypens. The final filename is likewise stored in =EXPORT_FILE_NAME=.
+1. If the heading has an =EXPORT_FILE_NAME= property, it is used, unless the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= file property is set.
+  - Note: this filename should already specify the output directory and extension, e.g. =manuscript/chapter.markua=
+2. If the heading has a =NAME=, =ID= or =CUSTOM_ID= property, it is used as the base filename, and used to construct the filename inside =manuscript=. The resulting final filename is stored in the =EXPORT_FILE_NAME= property.
+3. Othewise, the filename is generated based on the heading title by lowercasing it and replacing all non-alphanumeric characters with hypens. The resulting final filename is likewise stored in =EXPORT_FILE_NAME=.
 
 The last-used filename is stored in the =EXPORT_FILE_NAME= property of the corresponding heading. By default, once this property is set it is not modified on future exports. If you set the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= attribute in your file, the =EXPORT_FILE_NAME= property will be updated every time the book is exported. This can be useful to keep the filenames in sync when you change the heading titles in your document, but be aware that the file exported with the old name will not be removed automatically.
 
