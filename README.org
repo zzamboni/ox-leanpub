@@ -2,22 +2,22 @@
 #+author: Diego Zamboni
 #+email: diego@zzamboni.org
 
-Org-mode export backends to produce books in the correct structure and format for publication with [[https://leanpub.com/][Leanpub]].
+Org-mode export backends to produce books in the correct structure and format for publication with [[https://leanpub.com/][Leanpub]]. =ox-leanpub= allows you to write your book entirely in Org mode, and completely manages the production of the necessary files for Leanpub to be able to render your book. I use this package to publish most of [[https://leanpub.com/u/zzamboni][my books]] published on Leanpub.
 
-This package contains three Emacs libraries:
+This package contains three libraries:
 
 - =ox-leanpub-markua.el= exports Org files in Leanpub's [[https://leanpub.com/markua/read][Markua]] format, which is the default and recommended format for Leanpub books.
 - =ox-leanpub-markdown.el= exports Org files in [[https://leanpub.com/lfm/read][Leanpub Flavored Markdown]] (LFM), the original markup format for Leanpub books. It is recommended that you use Markua.
 - =ox-leanpub-book.el= exports an Org file in multiple files in the structure [[https://leanpub.com/manual/read?#writing-your-book-in-github-mode][required by Leanpub]], including the necessary =Book.txt=, =Sample.txt= and =Subset.txt= files. It can use either Markua or LFM as the export backend.
 
-This package allows you to write your book entirely in Org mode, and completely manages the production of the necessary files for Leanpub to be able to render your book. I use this package to publish most of [[https://leanpub.com/u/zzamboni][my books]] published on Leanpub.
-
-*Note:* I highly recommend you use the Markua exporter, as it's more mature and complete. Some Org constructs might not be exported correctly to Markdown.
+*Note:* I highly recommend using the Markua exporter, as it's more mature and complete. Some Org constructs might not be exported correctly to Markdown.
 
 If you have any feedback or bug reports, please open an issue at https://gitlab.com/zzamboni/ox-leanpub/-/issues.
 
 * Table of Contents :toc:
 - [[#installation][Installation]]
+  - [[#from-melpa][From MELPA]]
+  - [[#from-source][From source]]
 - [[#usage][Usage]]
 - [[#special-heading-tags][Special heading tags]]
 - [[#configuration][Configuration]]
@@ -26,7 +26,30 @@ If you have any feedback or bug reports, please open an issue at https://gitlab.
 
 * Installation
 
-For now the module is not yet available in MELPA, so you need to clone this repository using =git=:
+** From MELPA
+
+You can install the package directly from MELPA. For example, using =use-package=:
+
+#+begin_src emacs-lisp
+  (use-package ox-leanpub
+    :after org)
+#+end_src
+
+Note: installing the =ox-leanpub= package will also install =ox-gfm=, which is used for exporting tables in Markua format.
+
+By default, the =ox-leanpub= module sets things up for exporting books in Markua format. If you want to export your books in LFM format, you need to additionally load the =ox-leanpub-markdown= exporter and tell =ox-leanpub-book= to set up the corresponding menu entries, as follows:
+
+#+begin_src emacs-lisp
+  (use-package ox-leanpub
+    :after org
+    :config
+    (require 'ox-leanpub-markdown)
+    (org-leanpub-book-setup-menu-markdown))
+#+end_src
+
+** From source
+
+If you want to install from the source in GitLab, you can clone this repository using =git=:
 
 #+begin_src shell
   git clone https://gitlab.com/zzamboni/ox-leanpub.git
@@ -39,34 +62,31 @@ For now the module is not yet available in MELPA, so you need to clone this repo
       :after org)
 #+end_src
 
-By default, the =ox-leanpub= module sets things up for exporting books in Markua format. For example, using =use-package=:
-
-#+begin_src emacs-lisp
-  (use-package ox-leanpub
-    :load-path "~/.emacs.d/lisp/ox-leanpub"
-    :after org)
-#+end_src
-
-If you really want to export your books in LFM format, you need to additionally load the =ox-leanpub-markdown= exporter and tell =ox-leanpub-book= to set up the corresponding menu entries, as follows:
-
-#+begin_src emacs-lisp
-  (use-package ox-leanpub
-    :load-path "~/.emacs.d/lisp/ox-leanpub"
-    :after org
-    :config
-    (require 'ox-leanpub-markdown)
-    (org-leanpub-book-setup-menu-markdown))
-#+end_src
-
 * Usage
 
-Depending on whether you load the Markua or Markdown exporter, you will see the corresponding new sections in Org's export menu (~C-c C-e~), called "Export to Leanpub Markua" and "Export to Leanpub Markdown", with options to export to a file or a temporary buffer. Additionally, the =ox-leanpub-book= module adds three items in the corresponding section:
+Depending on whether you load the Markua or Markdown exporter, you will see the corresponding new sections in Org's export menu (~C-c C-e~), called "Export to Leanpub Markua" and "Export to Leanpub Markdown":
 
-- "Book: Whole book", which exports the whole book as one-file-per-chapter;
-- "Book: Subset", which exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
-- "Book: Current chapter" to explicitly export only the current chapter to its own file. This also updates =Subset.txt=, so it can be used to preview the current chapter.
+#+begin_example
+[M] Export to Leanpub Markua
+    [M] To temporary buffer       [m] To file
+    [o] To file and open
+    [b] Book: Whole book          [s] Book: Subset
+    [c] Book: Current chapter
 
-The first time you do a book export, the following directory and symlink structure will be created:
+[L] Export to Leanpub Markdown
+    [L] To temporary buffer       [l] To file
+    [o] To file and open
+    [b] Book: Whole book          [s] Book: Subset
+    [c] Book: Current chapter
+#+end_example
+
+The "Book" options do whole-book export in the structure required by Leanpub:
+
+- "Book: Whole book" exports the whole book as one-file-per-chapter;
+- "Book: Subset" exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
+- "Book: Current chapter" exports only the current chapter to its own file. This also updates =Subset.txt=, so it can be used to preview the current chapter.
+
+The first time you do a Book export, the following directory and symlink structure will be created:
 
 #+begin_example
   .
@@ -77,11 +97,11 @@ The first time you do a book export, the following directory and symlink structu
           └── images
 #+end_example
 
-In short, this is what the export operation does:
+In short, this is what the Book export operation does:
 
 - Creates a =manuscript= folder if needed, under which all other files are stored.
-  - A =resources/images= directory is created inside =manuscript=, as required by the Leanpub Markua processor (this is not required by the LFM processor, but the same structure is used).
-  - Symlinks to the =images= directory are created both from the top-level directory, and from the =manuscript= directory, to allow referencing the same image files both from the Org file and from the exported Markua files.
+- A =resources/images= directory is created inside =manuscript=, as required by the Leanpub Markua processor (this is not required by the LFM processor, but the same structure is used).
+- Symlinks to the =images= directory are created both from the top-level directory, and from the =manuscript= directory, to allow referencing the same image files both from the Org file and from the exported Markua files.
 - Exports one =.markua= or =.md= file for each top-level header (chapter) in your book.
 - Creates the =Book.txt= file with the filenames corresponding to the chapters of your book.
   - Depending on the exporter settings (see below), the =Subset.txt= and =Sample.txt= files may also be created.
