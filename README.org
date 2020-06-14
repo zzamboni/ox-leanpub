@@ -51,9 +51,10 @@ By default, the =ox-leanpub= module sets things up for exporting books in Markua
 
 ** From source
 
-If you want to install from the source in GitLab, you can clone this repository using =git=:
+If you want to install from the source in GitLab, you can clone this repository using =git=. For example:
 
 #+begin_src shell
+  cd ~/.emacs.d/lisp
   git clone https://gitlab.com/zzamboni/ox-leanpub.git
 #+end_src
 
@@ -62,6 +63,17 @@ If you want to install from the source in GitLab, you can clone this repository 
 #+begin_src emacs-lisp
     (use-package ox-gfm
       :after org)
+#+end_src
+
+In this case you need to load the module from the path where you installed it. For example:
+
+#+begin_src emacs-lisp
+  (use-package ox-leanpub
+    :path "~/.emacs.d/lisp/ox-leanpub"
+    :after org
+    :config
+    (require 'ox-leanpub-markdown)
+    (org-leanpub-book-setup-menu-markdown))
 #+end_src
 
 * Usage
