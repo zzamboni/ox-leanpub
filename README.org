@@ -14,6 +14,8 @@ This package contains three libraries:
 
 If you have any feedback or bug reports, please open an issue at https://gitlab.com/zzamboni/ox-leanpub/-/issues.
 
+If you want to see a real-world example of how to use it, you can find at https://github.com/zzamboni/emacs-org-leanpub the source of my (still in progress) book [[https://leanpub.com/emacs-org-leanpub][Publishing with Emacs, Org-mode and Leanpub]].
+
 * Table of Contents :toc:
 - [[#installation][Installation]]
   - [[#from-melpa][From MELPA]]
