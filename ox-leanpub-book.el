@@ -265,8 +265,25 @@ normally not be called directly by the user."
                                           org-leanpub-book-images-dir))
            (img-dir-rel-to-repo (concat (file-name-as-directory outdir)
                                         img-dir-rel-to-outdir))
-           (img-symlink-in-outdir (concat (file-name-as-directory outdir) org-leanpub-book-images-dir)))
+           (img-symlink-in-outdir (concat (file-name-as-directory outdir) org-leanpub-book-images-dir))
+           (images-readme-text "manuscript/resources/README file
+
+This file was created by ox-leanpub to force Git to store this
+directory. There are symlinks to this directory both from the
+top-level and from within manuscript/, to make it easier for you
+to include figures in your book by referencing them as
+`images/figure.png', and have that path be accessible from (a) your
+original Org file, (b) from the exported files in `manuscript/', and
+(c) to have the files stored within `manuscript/resources' as
+required by Leanpub's Markua processor.
+
+If you remove this file/directory from your git repo, please also
+remember to remove the symlinks, otherwise book generation will
+fail (Leanpub sees the broken symlink inside manuscript/ as an
+error).")
+           (images-readme-file (concat (file-name-as-directory img-dir-rel-to-repo) "README")))
       (make-directory img-dir-rel-to-repo t)
+      (write-region images-readme-text nil images-readme-file)
 
       (make-symbolic-link img-dir-rel-to-repo org-leanpub-book-images-dir t)
       (make-symbolic-link img-dir-rel-to-outdir img-symlink-in-outdir t))
