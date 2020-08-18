@@ -74,7 +74,9 @@
                      (table-cell         . org-gfm-table-cell)
                      (table-row          . org-gfm-table-row)
                      (table              . org-leanpub-markua-table)
-                     (export-block       . org-leanpub-markua-ignore))
+                     (export-block       . org-leanpub-markua-ignore)
+                     (superscript        . org-leanpub-markua-superscript)
+                     (subscript          . org-leanpub-markua-subscript))
   :options-alist
   '((:ox-markua-use-noweb-ref-as-caption "OX_MARKUA_USE_NOWEB_REF_AS_CAPTION" nil nil t)))
 
@@ -263,6 +265,18 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
   "Return an empty string for `SRC-BLOCK' elements which are ignored.
 CONTENTS and INFO are also ignored."
   "")
+
+(defun org-leanpub-markua-superscript (_superscript contents _info)
+  "Transcode a SUPERSCRIPT object from Org to MARKUA.
+CONTENTS is the contents of the object.  INFO is a plist holding
+contextual information."
+  (format "^%s^" contents))
+
+(defun org-leanpub-markua-subscript (_subscript contents _info)
+  "Transcode a SUBSCRIPT object from Org to MARKUA.
+CONTENTS is the contents of the object.  INFO is a plist holding
+contextual information."
+  (format "~%s~" contents))
 
 (defun org-leanpub-markua-plain-text (plain-text _info)
   "Return `PLAIN-TEXT' elements as-is.
