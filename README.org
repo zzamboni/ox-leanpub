@@ -19,6 +19,7 @@ If you want to see a real-world example of how to use it, you can find at https:
 * Table of Contents :toc:
 - [[#installation][Installation]]
   - [[#from-melpa][From MELPA]]
+  - [[#doom-emacs][Doom Emacs]]
   - [[#from-source][From source]]
 - [[#usage][Usage]]
 - [[#special-heading-tags][Special heading tags]]
@@ -48,6 +49,23 @@ By default, the =ox-leanpub= module sets things up for exporting books in Markua
     (require 'ox-leanpub-markdown)
     (org-leanpub-book-setup-menu-markdown))
 #+end_src
+
+** Doom Emacs
+
+If you use [[https://github.com/hlissner/doom-emacs/][Doom Emacs]],  add the following line to your =packages.el= file:
+
+#+begin_src emacs-lisp
+(package! ox-leanpub)
+#+end_src
+
+And the following to your =config.el= file:
+
+#+begin_src emacs-lisp
+(use-package! ox-leanpub
+  :after org)
+#+end_src
+
+If you need to export to Markdown, add the =:config= section exactly as shown before.
 
 ** From source
 
