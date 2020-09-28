@@ -114,9 +114,9 @@ correct value in your org file.")
   (org-export-define-derived-backend 'leanpub-book-markdown 'leanpub-markdown
     :menu-entry
     '(?L 1
-         ((?b "Book: Whole book"      (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t)))
-          (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t)))
-          (?c "Book: Current chapter" (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown s v t t 'current)))))
+         ((?b "Book: Whole book"      (lambda (_a s v _b) (org-leanpub-book-export-markdown s v 'sample-file)))
+          (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export-markdown s v 'sample-file 'only-subset)))
+          (?c "Book: Current chapter" (lambda (_a s v _b) (org-leanpub-book-export-markdown s v 'sample-file 'only-subset 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
@@ -129,9 +129,9 @@ correct value in your org file.")
   (org-export-define-derived-backend 'leanpub-book-markua 'leanpub-markua
     :menu-entry
     '(?M 1
-         ((?b "Book: Whole book"      (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v)))
-          (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t)))
-          (?c "Book: Current chapter" (lambda (_a s v _b) (org-leanpub-book-export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua s v nil t 'current)))))
+         ((?b "Book: Whole book"      (lambda (_a s v _b) (org-leanpub-book-export-markua s v)))
+          (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export-markua s v nil 'only-subset)))
+          (?c "Book: Current chapter" (lambda (_a s v _b) (org-leanpub-book-export-markua s v nil 'only-subset 'current)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
       (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
@@ -177,7 +177,7 @@ directory where the output should be stored.  ORIGINAL-POINT is
 the cursor position before the export started (used for the
 \"current chapter\" export).  EXPORT-FUNCTION, EXPORT-EXTENSION,
 DO-SAMPLE-FILE, ONLY-SUBSET and SUBSET-TYPE are as passed to
-`org-leanpub-book-export'"
+`org-leanpub-book--export'"
   (let* ((current-subtree (org-element-at-point))
          (ignore-stored-filenames (plist-get info :leanpub-book-recompute-filenames))
          (subset-mode (or subset-type (intern (plist-get info :leanpub-book-write-subset))))
@@ -223,7 +223,7 @@ DO-SAMPLE-FILE, ONLY-SUBSET and SUBSET-TYPE are as passed to
       (funcall export-function nil t))))
 
 ;; Main export function
-(defun org-leanpub-book-export (export-function export-extension export-backend-symbol &optional subtreep visible-only do-sample-file only-subset subset-type)
+(defun org-leanpub-book--export (export-function export-extension export-backend-symbol &optional subtreep visible-only do-sample-file only-subset subset-type)
   "Exports buffer to a Leanpub book.
 
 The buffer is split by top level headlines, populating the
@@ -307,6 +307,17 @@ error).")
        "-noexport"))
 
     (message "LeanPub export to %s/ finished" outdir)))
+
+;; Shortcuts to export the whole book in the two supported formats
+(defun org-leanpub-book-export-markdown (&optional subtreep visible-only do-sample-file only-subset subset-type)
+  "Export the book in LeanPub Markdown format. Frontend to
+`org-leanpub-book--export' with the appropriate parameters."
+  (org-leanpub-book--export #'org-leanpub-markdown-export-to-markdown ".md" 'leanpub-book-markdown subtreep visible-only do-sample-file only-subset subset-type))
+
+(defun org-leanpub-book-export-markua (&optional subtreep visible-only do-sample-file only-subset subset-type)
+  "Export the book in LeanPub Markua format. Frontend to
+`org-leanpub-book--export' with the appropriate parameters."
+  (org-leanpub-book--export #'org-leanpub-markua-export-to-markua ".markua" 'leanpub-book-markua subtreep visible-only do-sample-file only-subset subset-type))
 
 (provide 'ox-leanpub-book)
 
