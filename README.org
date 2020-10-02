@@ -23,6 +23,7 @@ If you want to see a real-world example of how to use it, you can find at https:
   - [[#from-source][From source]]
 - [[#usage][Usage]]
 - [[#special-heading-tags][Special heading tags]]
+- [[#calling-from-emacs-lisp][Calling from Emacs LISP]]
 - [[#configuration][Configuration]]
 - [[#credits][Credits]]
 - [[#disclaimer][Disclaimer]]
@@ -166,6 +167,12 @@ If a heading has the =sample= tag in a Markua export, the [[https://leanpub.com/
 If a heading has the =nobook= tag, the [[https://leanpub.com/markua/read#conditional-inclusion][conditional attribute]] ={book: false}= is inserted before the heading in the output, to indicate that the section should not be included in the book. You can specify both the =nobook= and =sample= tags to flag a section which should only be included in the sample. The =nobook= tag has no effect in Markdown exports.
 
 *Note:* =noexport= and =nobook= are similar but have different semantics. =noexport= is interpreted by Org when exporting your file, and it completely omits the corresponding headings from the output, whereas =nobook= includes the text, but flags it accordingly for Leanpub to ignore it when rendering the final book.
+
+* Calling from Emacs LISP
+
+There are multiple endpoints which can be useful when calling from Emacs LISP, for example from hooks to automatically export the book under certain conditions. Some of the most useful are:
+
+- =org-leanpub-book-export-markdown= and =org-leanpub-book-export-markua=: both can be called without arguments, and export the whole book in the corresponding format.
 
 * Configuration
 :PROPERTIES:
