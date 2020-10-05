@@ -104,20 +104,18 @@ Depending on whether you load the Markua or Markdown exporter, you will see the 
     [M] To temporary buffer       [m] To file
     [o] To file and open
     [b] Book: Whole book          [s] Book: Subset
-    [c] Book: Current chapter
 
 [L] Export to Leanpub Markdown
     [L] To temporary buffer       [l] To file
     [o] To file and open
     [b] Book: Whole book          [s] Book: Subset
-    [c] Book: Current chapter
 #+end_example
 
 The "Book" options do whole-book export in the structure required by Leanpub:
 
 - "Book: Whole book" exports the whole book as one-file-per-chapter;
 - "Book: Subset" exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
-- "Book: Current chapter" exports only the current chapter to its own file. This also updates =Subset.txt=, so it can be used to preview the current chapter.
+  + The subset export can be temporarily restricted to the current chapter (regardless of the =#+LEANPUB_BOOK_WRITE_SUBSET= setting, see below) by pressing =C-s= in the Org-mode Export screen to set "Export scope" to "Buffer".
 
 The first time you do a Book export, the following directory and symlink structure will be created:
 
@@ -148,7 +146,7 @@ The book files are created inside =manuscript= and populated as follows:
   - =tagged=: use all chapters tagged =subset=.
   - =all=: use the same chapters as =Book.txt=.
   - =sample=: use same chapters as =Sample.txt=.
-  - =current=: export the current chapter (where the cursor is at the moment of the export) as the contents of =Subset.txt=.
+  - =current=: export the current chapter (where the cursor is at the moment of the export) as the contents of =Subset.txt=. This can be set temporarily (for a single export) by pressing =C-s= in the Export screen to set "Export scope" to "Subtree".
 
 The exported chapter files are named as follows:
 1. If the heading has an =EXPORT_FILE_NAME= property, it is used, unless the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= file property is set.
