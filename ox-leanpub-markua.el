@@ -69,6 +69,7 @@
                      (item               . org-leanpub-markua-item)
                      (link               . org-leanpub-markua-link)
                      (latex-fragment     . org-leanpub-markua-latex-fragment)
+                     (latex-environment  . org-leanpub-markua-latex-environment)
                      (line-break         . org-leanpub-markua-line-break)
                      (paragraph          . org-leanpub-markua-paragraph)
                      (table-cell         . org-gfm-table-cell)
@@ -139,14 +140,22 @@ contextual information.  We prepend the Leanpub attribute line if needed."
           (org-gfm-table table contents info)))
 
 (defun org-leanpub-markua-latex-fragment (latex-fragment _contents _info)
-  "Transcode a LATEX-FRAGMENT object from Org to Markua.
-CONTENTS is nil.  INFO is a plist holding contextual information."
+  "Transcode a LATEX-FRAGMENT (math) object from Org to Markua."
   (concat
    (format "`%s`$"
            ;; Removes the \[, \] and $ that mark latex fragments
            (replace-regexp-in-string
-            "\\\\\\[\\|\\\\\\]\\|\\$" ""
-            (org-element-property :value latex-fragment)))))
+            (rx bos (or "\\[" "\\(" "$")) ""
+            (replace-regexp-in-string
+             (rx (or "\\]" "\\)" "$") eos) ""
+             (org-element-property :value latex-fragment))))))
+
+(defun org-leanpub-markua-latex-environment (latex-environment _contents _info)
+  "Transcode a LATEX-ENVIRONMENT (math env) object from Org to Markua."
+  (let ((latex-frag (org-remove-indentation
+		     (org-leanpub-markua--chomp-end
+                      (org-element-property :value latex-environment)))))
+    (format "```$\n%s\n```\n" latex-frag)))
 
 (defun org-leanpub-markua-headline-without-anchor (headline contents info)
   "Transcode HEADLINE element into Markua format.
