@@ -350,7 +350,10 @@ CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (org-leanpub-markua-src-block src-block contents info))
 
-;;; Export special blocks, mapping them to corresponding block types according to the LeanPub documentation at https://leanpub.com/help/manual#leanpub-auto-blocks-of-text.
+;;; Export special blocks, mapping them to corresponding block types according
+;;; to the LeanPub documentation at
+;;; https://leanpub.com/help/manual#leanpub-auto-blocks-of-text.
+;;;
 ;;; The supported block types and their conversions are listed in lp-block-mappings.
 ;;; e.g.
 ;;;     #+begin_tip
@@ -358,30 +361,44 @@ channel."
 ;;;     #+end_tip
 ;;; gets exported as
 ;;;     T> This is a tip
+;;;
+;;; Two block types are handled differently: QUIZ and EXERCISE. They are
+;;; exported as {quiz} and {exercise} environments according to the
+;;; documentation at
+;;; https://leanpub.com/markua/read#leanpub-auto-quizzes-and-exercises
 (defun org-leanpub-markua-special-block (special-block contents info)
   "Transcode a SPECIAL-BLOCK element into Markua format.
 CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (let* ((type (org-element-property :type special-block))
          (caption (org-export-data (org-element-property :caption special-block) info))
-         (lp-block-mappings
-          '(tip "T"
-                aside "A"
-                warning "W"
-                error "E"
-                note "I"
-                question "Q"
-                discussion "D"
-                exercise "X"
-                center "C"))
+         (lp-block-mappings '(tip "T"
+                              aside "A"
+                              warning "W"
+                              error "E"
+                              note "I"
+                              question "Q"
+                              discussion "D"
+                              center "C"))
          (lp-char (plist-get lp-block-mappings (intern type))))
-    (concat
-     (org-leanpub-markua--attribute-line special-block info)
-     (replace-regexp-in-string
-      "^" (concat lp-char "> ")
+    (if (member type '("exercise" "quiz"))
+        (let ((id (or (org-element-property :name special-block)
+                      (org-element-property :ID special-block)))
+              (block-value (buffer-substring (org-element-property :contents-begin special-block)
+                                             (org-element-property :contents-end special-block))))
+          (concat
+           ;;(org-leanpub-markua--attribute-line special-block info)
+           (format "{%s, id: %s}\n" type id)
+           (when (> (length caption) 0) (format "### %s\n" caption))
+           (org-leanpub-markua--chomp-end block-value)
+           (format "\n{/%s}\n" type)))
       (concat
-       (when (> (length caption) 0) (format "### %s\n" caption))
-       (org-leanpub-markua--chomp-end (org-remove-indentation contents)))))))
+       (org-leanpub-markua--attribute-line special-block info)
+       (replace-regexp-in-string
+        "^" (concat lp-char "> ")
+        (concat
+         (when (> (length caption) 0) (format "### %s\n" caption))
+         (org-leanpub-markua--chomp-end (org-remove-indentation contents))))))))
 
 (defun org-leanpub-markua-link (link contents info)
   "Transcode a LINK object into Markua format.
