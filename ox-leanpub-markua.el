@@ -79,7 +79,38 @@
                      (superscript        . org-leanpub-markua-superscript)
                      (subscript          . org-leanpub-markua-subscript))
   :options-alist
-  '((:ox-markua-use-noweb-ref-as-caption "OX_MARKUA_USE_NOWEB_REF_AS_CAPTION" nil nil t)))
+  '((:ox-markua-use-noweb-ref-as-caption "OX_MARKUA_USE_NOWEB_REF_AS_CAPTION" nil nil t)
+    (:ox-markua-export-type "OX_MARKUA_EXPORT_TYPE" nil "book" t)))
+
+;;; Variable definitions
+(defvar org-leanpub-markua-block-mapping
+  '(tip "T"
+    aside "A"
+    warning "W"
+    error "E"
+    note "I"
+    question "Q"
+    discussion "D"
+    center "C"
+    exercise "X")
+  "Mapping from org block types to Markua blurbs.
+The default value corresponds to the blurb types as documentated
+at https://leanpub.com/markua/read#leanpub-auto-blurbs-b-or-blurb
+
+For example:
+
+    #+begin_tip
+    This is a tip
+    #+end_tip
+
+gets exported as
+
+    T> This is a tip
+
+Note that `exercise' blocks get handled differently depending on
+whether you are exporting a book or a course, see the
+documentation for `org-leanpub-markua-special-block' for
+details.")
 
 ;;; Utility functions
 
@@ -350,38 +381,52 @@ CONTENTS is nil.  INFO is a plist used as a communication
 channel."
   (org-leanpub-markua-src-block src-block contents info))
 
-;;; Export special blocks, mapping them to corresponding block types according
-;;; to the LeanPub documentation at
-;;; https://leanpub.com/help/manual#leanpub-auto-blocks-of-text.
-;;;
-;;; The supported block types and their conversions are listed in lp-block-mappings.
-;;; e.g.
-;;;     #+begin_tip
-;;;     This is a tip
-;;;     #+end_tip
-;;; gets exported as
-;;;     T> This is a tip
-;;;
-;;; Two block types are handled differently: QUIZ and EXERCISE. They are
-;;; exported as {quiz} and {exercise} environments according to the
-;;; documentation at
-;;; https://leanpub.com/markua/read#leanpub-auto-quizzes-and-exercises
 (defun org-leanpub-markua-special-block (special-block contents info)
-  "Transcode a SPECIAL-BLOCK element into Markua format.
-CONTENTS is nil.  INFO is a plist used as a communication
-channel."
+  "Transcode a SPECIAL-BLOCK element from Org to Markua.
+CONTENTS is the already-converted contents of the block. INFO is
+a plist used as a communication channel.
+
+Special blocks are mapped to corresponding Markua blurb types
+according to the documentation at
+https://leanpub.com/markua/read#leanpub-auto-blurbs-b-or-blurb
+
+The supported block types and their conversions are defined in
+`org-leanpub-markua-block-mapping'. For example:
+
+    #+begin_tip
+    This is a tip
+    #+end_tip
+
+gets exported as
+
+    T> This is a tip
+
+Blocks of type QUIZ are exported as {quiz} environments according
+to the documentation at
+https://leanpub.com/markua/read#leanpub-auto-quizzes-and-exercises.
+These blocks require an ID attribute in Markua, which needs to be
+provided using a `#+name' attribute before the start of the
+block.
+
+The content of quiz blocks is transcribed as-is into the output,
+to prevent Org's conversions from interfering with the special
+formatting used by Markua quizzes and exercises. If you need any
+special formatting inside the block, you need to specify it
+directly in Markua format.
+
+Blocks of type EXAMPLE are handled differently depending on the
+`#+OX_MARKUA_EXPORT_TYPE' option specified for the current
+buffer. With its default value (`book'), example blocks are
+exported using the blurb notation `X>'. If
+`#+OX_MARKUA_EXPORT_TYPE' is `course', then example blocks are
+exported as {example} environments, and otherwise handled the
+same as {quiz} environments."
   (let* ((type (org-element-property :type special-block))
          (caption (org-export-data (org-element-property :caption special-block) info))
-         (lp-block-mappings '(tip "T"
-                              aside "A"
-                              warning "W"
-                              error "E"
-                              note "I"
-                              question "Q"
-                              discussion "D"
-                              center "C"))
-         (lp-char (plist-get lp-block-mappings (intern type))))
-    (if (member type '("exercise" "quiz"))
+         (lp-char (plist-get org-leanpub-markua-block-mapping (intern type))))
+    (if (or (string-equal type "quiz")
+            (and (string-equal type "exercise")
+                 (string-equal (plist-get info :ox-markua-export-type) "course")))
         (let ((id (or (org-element-property :name special-block)
                       (org-element-property :ID special-block)))
               (block-value (buffer-substring (org-element-property :contents-begin special-block)
