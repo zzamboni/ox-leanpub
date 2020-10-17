@@ -52,12 +52,12 @@
   :menu-entry
   '(?M "Export to Leanpub Markua"
        ((?M "To temporary buffer"
-	          (lambda (a s v b) (org-leanpub-markua-export-as-markua a s v)))
-	      (?m "To file" (lambda (a s v b) (org-leanpub-markua-export-to-markua a s v)))
-	      (?o "To file and open"
-	          (lambda (a s v b)
-	            (if a (org-leanpub-markua-export-to-markua t s v)
-		            (org-open-file (org-leanpub-markua-export-to-markua nil s v)))))))
+	    (lambda (a s v b) (org-leanpub-markua-export-as-markua a s v)))
+	(?m "To file" (lambda (a s v b) (org-leanpub-markua-export-to-markua a s v)))
+	(?o "To file and open"
+	    (lambda (a s v b)
+	      (if a (org-leanpub-markua-export-to-markua t s v)
+		(org-open-file (org-leanpub-markua-export-to-markua nil s v)))))))
   :translate-alist '((fixed-width        . org-leanpub-markua-fixed-width-block)
                      (example-block      . org-leanpub-markua-example-block)
                      (special-block      . org-leanpub-markua-special-block)
@@ -85,14 +85,14 @@
 ;;; Variable definitions
 (defvar org-leanpub-markua-block-mapping
   '(tip "T"
-    aside "A"
-    warning "W"
-    error "E"
-    note "I"
-    question "Q"
-    discussion "D"
-    center "C"
-    exercise "X")
+        aside "A"
+        warning "W"
+        error "E"
+        note "I"
+        question "Q"
+        discussion "D"
+        center "C"
+        exercise "X")
   "Mapping from org block types to Markua blurbs.
 The default value corresponds to the blurb types as documentated
 at https://leanpub.com/markua/read#leanpub-auto-blurbs-b-or-blurb
@@ -137,14 +137,14 @@ produced attribute line."
          (printed '())
          (lpattr-str-new (mapconcat #'identity
                                     (cl-remove-if #'null
-                                               (mapcar (lambda (elem)
-                                                         (let* ((keysym (car elem))
-                                                                (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
-                                                                (val (cdr elem)))
-                                                           (when (and (> (length val) 0) (not (plist-member printed keysym)))
-                                                             (setq printed (plist-put printed keysym t))
-                                                             (format "%s: \"%s\"" keystr val))))
-                                                       lpattr)) ", "))
+                                                  (mapcar (lambda (elem)
+                                                            (let* ((keysym (car elem))
+                                                                   (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
+                                                                   (val (cdr elem)))
+                                                              (when (and (> (length val) 0) (not (plist-member printed keysym)))
+                                                                (setq printed (plist-put printed keysym t))
+                                                                (format "%s: \"%s\"" keystr val))))
+                                                          lpattr)) ", "))
          (output (if oldstyle
                      (format "%s" lpattr-str)
                    (when (> (length lpattr-str-new) 0)
@@ -195,39 +195,39 @@ a communication channel.  This is the same function as
 `org-md-headline' but without inserting the <a> anchors."
   (unless (org-element-property :footnote-section-p headline)
     (let* ((level (org-export-get-relative-level headline info))
-	         (title (org-export-data (org-element-property :title headline) info))
-	         (todo (and (plist-get info :with-todo-keywords)
-		                  (let ((todo (org-element-property :todo-keyword
-							                                          headline)))
-			                  (and todo (concat (org-export-data todo info) " ")))))
-	         (tags (and (plist-get info :with-tags)
-		                  (let ((tag-list (org-export-get-tags headline info)))
-			                  (and tag-list
-			                       (concat "     " (format ":%s:" (mapconcat #'identity tag-list ":")))))))
-	         (priority
-	          (and (plist-get info :with-priority)
-		             (let ((char (org-element-property :priority headline)))
-		               (and char (format "[#%c] " char)))))
-	         ;; Headline text without tags.
-	         (heading (concat todo priority title))
-	         (style (plist-get info :md-headline-style)))
+	   (title (org-export-data (org-element-property :title headline) info))
+	   (todo (and (plist-get info :with-todo-keywords)
+		      (let ((todo (org-element-property :todo-keyword
+							headline)))
+			(and todo (concat (org-export-data todo info) " ")))))
+	   (tags (and (plist-get info :with-tags)
+		      (let ((tag-list (org-export-get-tags headline info)))
+			(and tag-list
+			     (concat "     " (format ":%s:" (mapconcat #'identity tag-list ":")))))))
+	   (priority
+	    (and (plist-get info :with-priority)
+		 (let ((char (org-element-property :priority headline)))
+		   (and char (format "[#%c] " char)))))
+	   ;; Headline text without tags.
+	   (heading (concat todo priority title))
+	   (style (plist-get info :md-headline-style)))
       (cond
        ;; Cannot create a headline.  Fall-back to a list.
        ((or (org-export-low-level-p headline info)
-	          (not (memq style '(atx setext)))
-	          (and (eq style 'atx) (> level 6))
-	          (and (eq style 'setext) (> level 2)))
-	      (let ((bullet
-	             (if (not (org-export-numbered-headline-p headline info)) "-"
-		             (concat (number-to-string
-			                    (car (last (org-export-get-headline-number
-				                              headline info))))
-			                   "."))))
-	        (concat bullet " " heading tags "\n\n"
-		              (and contents (replace-regexp-in-string "^" (make-string (1+ (length bullet)) ?\s) contents)))))
+	    (not (memq style '(atx setext)))
+	    (and (eq style 'atx) (> level 6))
+	    (and (eq style 'setext) (> level 2)))
+	(let ((bullet
+	       (if (not (org-export-numbered-headline-p headline info)) "-"
+		 (concat (number-to-string
+			  (car (last (org-export-get-headline-number
+				      headline info))))
+			 "."))))
+	  (concat bullet " " heading tags "\n\n"
+		  (and contents (replace-regexp-in-string "^" (make-string (1+ (length bullet)) ?\s) contents)))))
        (t
-	      (concat (org-md--headline-title style level heading nil tags)
-		            contents))))))
+	(concat (org-md--headline-title style level heading nil tags)
+		contents))))))
 
 (defun org-leanpub-markua-headline (headline contents info)
   "Add Leanpub attribute line before HEADLINE.
@@ -236,11 +236,11 @@ produces the appropriate Leanpub attributes.  CONTENTS is the
 item contents.  INFO is a plist used as a communication channel."
   (let* ((tags (org-export-get-tags headline info))
          (other-attrs (cl-remove-if 'null
-                                 (mapcar (lambda (elem)
-                                           (if (string-equal elem "sample")
-                                               '(:sample . "true")
-                                             (when (string-equal elem "nobook")
-                                               '(:book . "false")))) tags))))
+                                    (mapcar (lambda (elem)
+                                              (if (string-equal elem "sample")
+                                                  '(:sample . "true")
+                                                (when (string-equal elem "nobook")
+                                                  '(:book . "false")))) tags))))
     (concat (org-leanpub-markua--attribute-line headline info other-attrs)
             (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info)))))
 
@@ -275,7 +275,7 @@ definitions at the end."
    contents
    "\n\n"
    (let ((definitions (org-export-collect-footnote-definitions
-		                   info
+		       info
                        (plist-get info :parse-tree))))
      ;; Looks like leanpub do not like : in labels.
      (mapconcat (lambda (ref)
