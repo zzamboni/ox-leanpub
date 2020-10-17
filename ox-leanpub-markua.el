@@ -161,7 +161,7 @@ produced attribute line."
                             ""
                             str))
 
-;;;; Table
+;;; Tables
 
 (defun org-leanpub-markua-table (table contents info)
   "Use ox-gfm to transcode TABLE element into Github Flavored Markdown table.
@@ -169,6 +169,8 @@ CONTENTS is the contents of the table.  INFO is a plist holding
 contextual information.  We prepend the Leanpub attribute line if needed."
   (concat (org-leanpub-markua--attribute-line table info)
           (org-gfm-table table contents info)))
+
+;;; LaTeX fragments and environments
 
 (defun org-leanpub-markua-latex-fragment (latex-fragment _contents _info)
   "Transcode a LATEX-FRAGMENT (math) object from Org to Markua."
@@ -187,6 +189,8 @@ contextual information.  We prepend the Leanpub attribute line if needed."
 		     (org-leanpub-markua--chomp-end
                       (org-element-property :value latex-environment)))))
     (format "```$\n%s\n```\n" latex-frag)))
+
+;;; Other elements
 
 (defun org-leanpub-markua-headline-without-anchor (headline contents info)
   "Transcode HEADLINE element into Markua format.
@@ -291,7 +295,7 @@ definitions at the end."
 
 (defun org-leanpub-markua-footnote-reference (footnote _contents info)
   "Export a `FOOTNOTE'.
-CONTENTS is nil.  INFO is a plist holding contextual information."
+INFO is a plist holding contextual information."
   ;; Leanpub does not like : in labels, so we replace them with underscores
   (format "[^%s]"
           (replace-regexp-in-string
@@ -319,8 +323,7 @@ contextual information."
   (format "~%s~" contents))
 
 (defun org-leanpub-markua-plain-text (plain-text _info)
-  "Return `PLAIN-TEXT' elements as-is.
-CONTENTS is nil.  INFO is a plist holding contextual information."
+  "Return `PLAIN-TEXT' elements as-is."
   plain-text)
 
 ;;; EOLs are removed from paragraphs in Markua
@@ -346,8 +349,7 @@ the plist used as a communication channel."
 ;;; ~~~~~~~~
 (defun org-leanpub-markua-src-block (src-block _contents info)
   "Transcode SRC-BLOCK element into Markua format.
-CONTENTS is nil.  INFO is a plist used as a communication
-channel."
+INFO is a plist used as a communication channel."
   (let* ((use-noweb-ref (plist-get info :ox-markua-use-noweb-ref-as-caption))
          (do-export (not (member (org-leanpub-markua--get-header-arg :exports src-block) '("results" "none"))))
          (noweb-ref (org-leanpub-markua--get-header-arg :noweb-ref src-block))
@@ -368,8 +370,8 @@ channel."
 ;;; > ~~~~~~~~
 (defun org-leanpub-markua-example-block (src-block contents info)
   "Transcode SRC-BLOCK element into Markua format.
-CONTENTS is nil.  INFO is a plist used as a communication
-channel."
+CONTENTS holds the contents of the block. INFO is a plist used as
+a communication channel."
   (org-leanpub-markua-src-block src-block contents info))
 
 ;;; > ~~~~~~~~
@@ -377,8 +379,8 @@ channel."
 ;;; > ~~~~~~~~
 (defun org-leanpub-markua-fixed-width-block (src-block contents info)
   "Transcode SRC-BLOCK element into Markua format.
-CONTENTS is nil.  INFO is a plist used as a communication
-channel."
+CONTENTS holds the contents of the block. INFO is a plist used as
+a communication channel."
   (org-leanpub-markua-src-block src-block contents info))
 
 (defun org-leanpub-markua-special-block (special-block contents info)
@@ -447,8 +449,8 @@ same as {quiz} environments."
 
 (defun org-leanpub-markua-link (link contents info)
   "Transcode a LINK object into Markua format.
-CONTENTS is the link's description.  INFO is a plist used as
-a communication channel."
+CONTENTS is the link description. INFO is a plist used as a
+communication channel."
   (let ((type (org-element-property :type link)))
     (cond ((member type '("custom-id" "id"))
            (let ((id (org-element-property :path link)))
@@ -477,7 +479,11 @@ a communication channel."
 
 (defun org-leanpub-markua-line-break (_line-break _contents _info)
   "Transcode a LINE-BREAK object from Org to Markua.
-CONTENTS is nil.  INFO is a plist holding contextual information."
+
+Arguments are ignored. Linebreaks are temporarily converted to
+the string `{{markua:linebreak}}', which is later removed in
+`org-leanpub-markua-paragraph', since the Markua spec requires
+paragraphs to be in a single line without linebreaks."
   "{{markua:linebreak}}")
 
 ;;; Interactive function
