@@ -114,7 +114,7 @@ details.")
 
 ;;; Utility functions
 
-(defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline)
+(defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline env-name)
   "Generate a Leanpub attribute line before an object.
 Collect #+NAME, #+CAPTION, and any attributes specified as :key
 value in the #+ATTR_LEANPUB line for `ELEM', and put them all together in a
@@ -123,10 +123,12 @@ attribute is present in both places (e.g. if both #+CAPTION and
 :title are specified), then the values from #+ATTR_LEANPUB take
 precedence.
 
-`INFO' is a plist holding contextual information.  `OTHER-ATTRS',
-if given, is an alist holding additional attributes to
-include.  `NONEWLINE', supresses a trailing newline in the
-produced attribute line."
+`INFO' is a plist holding contextual information. `OTHER-ATTRS',
+if given, is an alist holding additional attributes to include.
+`NONEWLINE', supresses a trailing newline in the produced
+attribute line. `ENV-NAME' can be specified to format the line as
+an environment name followed by the attributes, e.g. for a quiz
+or exercise environment in Markua."
   (let* ((init (list (cons :id (or (org-element-property :name elem)
                                    (org-element-property :ID elem)
                                    (org-element-property :CUSTOM_ID elem)))
@@ -137,14 +139,16 @@ produced attribute line."
          (printed '())
          (lpattr-str-new (mapconcat #'identity
                                     (cl-remove-if #'null
-                                                  (mapcar (lambda (elem)
-                                                            (let* ((keysym (car elem))
-                                                                   (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
-                                                                   (val (cdr elem)))
-                                                              (when (and (> (length val) 0) (not (plist-member printed keysym)))
-                                                                (setq printed (plist-put printed keysym t))
-                                                                (format "%s: \"%s\"" keystr val))))
-                                                          lpattr)) ", "))
+                                                  (append
+                                                   (list env-name)
+                                                   (mapcar (lambda (elem)
+                                                             (let* ((keysym (car elem))
+                                                                    (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
+                                                                    (val (cdr elem)))
+                                                               (when (and (> (length val) 0) (not (plist-member printed keysym)))
+                                                                 (setq printed (plist-put printed keysym t))
+                                                                 (format "%s: \"%s\"" keystr val))))
+                                                           lpattr))) ", "))
          (output (if oldstyle
                      (format "%s" lpattr-str)
                    (when (> (length lpattr-str-new) 0)
@@ -434,8 +438,8 @@ same as {quiz} environments."
               (block-value (buffer-substring (org-element-property :contents-begin special-block)
                                              (org-element-property :contents-end special-block))))
           (concat
-           ;;(org-leanpub-markua--attribute-line special-block info)
-           (format "{%s, id: %s}\n" type id)
+           (org-leanpub-markua--attribute-line special-block info nil nil type)
+           ;;(format "{%s, id: %s}\n" type id)
            (when (> (length caption) 0) (format "### %s\n" caption))
            (org-leanpub-markua--chomp-end block-value)
            (format "\n{/%s}\n" type)))
