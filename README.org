@@ -22,9 +22,10 @@ If you want to see a real-world example of how to use it, you can find at https:
   - [[#doom-emacs][Doom Emacs]]
   - [[#from-source][From source]]
 - [[#usage][Usage]]
-- [[#special-heading-tags][Special heading tags]]
-- [[#calling-from-emacs-lisp][Calling from Emacs LISP]]
-- [[#configuration][Configuration]]
+  - [[#special-heading-tags][Special heading tags]]
+  - [[#exporting-books-and-courses][Exporting books and courses]]
+  - [[#calling-from-emacs-lisp][Calling from Emacs LISP]]
+  - [[#configuration][Configuration]]
 - [[#credits][Credits]]
 - [[#disclaimer][Disclaimer]]
 
@@ -156,7 +157,7 @@ The exported chapter files are named as follows:
 
 The last-used filename is stored in the =EXPORT_FILE_NAME= property of the corresponding heading. By default, once this property is set it is not modified on future exports. If you set the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= attribute in your file, the =EXPORT_FILE_NAME= property will be updated every time the book is exported. This can be useful to keep the filenames in sync when you change the heading titles in your document, but be aware that the file exported with the old name will not be removed automatically.
 
-* Special heading tags
+** Special heading tags
 
 If a heading has the =frontmatter=, =mainmatter= or =backmatter= tags, the [[https://leanpub.com/markua/read#directives][corresponding directive]] (they work in both Markdown and Markup modes) is inserted in the output, before the headline. This way, you only need to tag the first chapter of the front, main, and backmatter, respectively.
 
@@ -166,13 +167,25 @@ If a heading has the =nobook= tag, the [[https://leanpub.com/markua/read#conditi
 
 *Note:* =noexport= and =nobook= are similar but have different semantics. =noexport= is interpreted by Org when exporting your file, and it completely omits the corresponding headings from the output, whereas =nobook= includes the text, but flags it accordingly for Leanpub to ignore it when rendering the final book.
 
-* Calling from Emacs LISP
+** Exporting books and courses
+
+Leanpub Markua supports exporting both books and courses. The results are largely the same, with currently one exception:
+
+- Org blocks of type =exercise= (=#+begin_exercise= / =#+end_exercise=) are exported as [[https://leanpub.com/markua/read#leanpub-auto-syntactic-sugar-for-specific-blurb-classes-d-e-i-q-t-w-x]["X>" blurbs]] in books, and as [[https://leanpub.com/markua/read#leanpub-auto-quizzes-and-exercises][={exercise}= blocks]] in courses.
+
+You can tell =ox-leanpub= how your buffer should be exported by setting the =#+OX_MARKUA_EXPORT_TYPE= option. Its default value is "book". If you are exporting a course, set it as follows:
+
+#+begin_src org
+,#+OX_MARKUA_EXPORT_TYPE: course
+#+end_src
+
+** Calling from Emacs LISP
 
 There are multiple endpoints which can be useful when calling from Emacs LISP, for example from hooks to automatically export the book under certain conditions. Some of the most useful are:
 
 - =org-leanpub-book-export-markdown= and =org-leanpub-book-export-markua=: both can be called without arguments, and export the whole book in the corresponding format.
 
-* Configuration
+** Configuration
 :PROPERTIES:
 :CUSTOM_ID: configuration
 :END:
@@ -183,7 +196,8 @@ The modules provide reasonable defaults, but you can configure some parameters b
 | =#+LEANPUB_BOOK_OUTPUT_DIR=            | "manuscript"  | Subdirectory where the exported files will be created.                                                                                                                                                                                                                                       |
 | =#+LEANPUB_BOOK_WRITE_SUBSET=          | "none"        | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                                                   |
 | =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES=   | =nil=           | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title.                                                                                                                                                                               |
-| =#+OX_MARKUA_USE_NOWEB_REF_AS_CAPTION= | =nil=           | (only for Markua export) If set (regardless of its value), use "«noweb-ref»≡" as the caption for source code blocks where the =:noweb-ref= header argument is set. This can be used (depending on the formatting of your book) to emulate the default output format from [[https://en.wikipedia.org/wiki/Noweb][noweb]]-rendered files.   |
+| =#+OX_MARKUA_USE_NOWEB_REF_AS_CAPTION= | =nil=           | (only for Markua export) If set (regardless of its value), use "«noweb-ref»≡" as the caption for source code blocks where the =:noweb-ref= header argument is set. This can be used (depending on the formatting of your book) to emulate the default output format from [[https://en.wikipedia.org/wiki/Noweb][noweb]]-rendered files. |
+| =#+OX_MARKUA_EXPORT_TYPE=              | "book"        | (only for Markua export) Determines the type of export being done. Valid values are "book" and "course".                                                                                                                                                                                     |
 
 * Credits
 
