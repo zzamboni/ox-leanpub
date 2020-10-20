@@ -80,7 +80,7 @@
                      (subscript          . org-leanpub-markua-subscript))
   :options-alist
   '((:ox-markua-use-noweb-ref-as-caption "OX_MARKUA_USE_NOWEB_REF_AS_CAPTION" nil nil t)
-    (:ox-markua-export-type "OX_MARKUA_EXPORT_TYPE" nil "book" t)))
+    (:ox-markua-export-type              "OX_MARKUA_EXPORT_TYPE" nil "book" t)))
 
 ;;; Variable definitions
 (defvar org-leanpub-markua-block-mapping
@@ -115,13 +115,13 @@ details.")
 ;;; Utility functions
 
 (defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline env-name)
-  "Generate a Leanpub attribute line before an object.
+  "Generate a Leanpub attribute or environment line.
 Collect #+NAME, #+CAPTION, and any attributes specified as :key
-value in the #+ATTR_LEANPUB line for `ELEM', and put them all together in a
-Leanpub-style attribute line of the form {key: value,...}.  If an
-attribute is present in both places (e.g. if both #+CAPTION and
-:title are specified), then the values from #+ATTR_LEANPUB take
-precedence.
+value in the #+ATTR_LEANPUB line for `ELEM', and put them all
+together in a Leanpub-style attribute line of the form {key:
+value,...}. If an attribute is present in both places (e.g. if
+both #+CAPTION and :title are specified), then the values from
+#+ATTR_LEANPUB take precedence.
 
 `INFO' is a plist holding contextual information. `OTHER-ATTRS',
 if given, is an alist holding additional attributes to include.
@@ -129,31 +129,41 @@ if given, is an alist holding additional attributes to include.
 attribute line. `ENV-NAME' can be specified to format the line as
 an environment name followed by the attributes, e.g. for a quiz
 or exercise environment in Markua."
-  (let* ((init (list (cons :id (or (org-element-property :name elem)
+  (let* (
+         ;; Populate initial list with :id and :caption, if given
+         (init (list (cons :id (or (org-element-property :name elem)
                                    (org-element-property :ID elem)
                                    (org-element-property :CUSTOM_ID elem)))
                      (cons :caption (org-export-data (caar (org-element-property :caption elem)) info))))
+         ;; Get the value of the #+ATTR_LEANPUB line, if given
          (lpattr-str (car (org-element-property :attr_leanpub elem)))
-         (lpattr (append (org-babel-parse-header-arguments lpattr-str) other-attrs init))
+         ;; Parse the attributes from #+ATTR_LEANPUB and concatenate with any
+         ;; other arguments given, and with the initial list constructed above.
+         ;; Earlier elements of the list override later ones.
+         (lpattr (delq nil (append (org-babel-parse-header-arguments lpattr-str) other-attrs init)))
+         ;; Determine if #+ATTR_LEANPUB is given in the "old style"
+         ;; ({attr=value,..}), in which case it is simply passed on to the
+         ;; output (TODO: deprecate)
          (oldstyle (string-prefix-p "{" lpattr-str))
-         (printed '())
-         (lpattr-str-new (mapconcat #'identity
-                                    (cl-remove-if #'null
-                                                  (append
-                                                   (list env-name)
-                                                   (mapcar (lambda (elem)
-                                                             (let* ((keysym (car elem))
-                                                                    (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
-                                                                    (val (cdr elem)))
-                                                               (when (and (> (length val) 0) (not (plist-member printed keysym)))
-                                                                 (setq printed (plist-put printed keysym t))
-                                                                 (format "%s: \"%s\"" keystr val))))
-                                                           lpattr))) ", "))
+         ;; Build the attribute line to print
+         (attribute-line
+          (mapconcat #'identity
+                     (delq nil
+                           (append
+                            (list env-name)
+                            (mapcar (lambda (elem)
+                                      (cl-destructuring-bind (key . val) elem
+                                        (when (> (length val) 0)
+                                          (format "%s: \"%s\""
+                                                  (substring (symbol-name key) 1)
+                                                  val))))
+                                    (cl-remove-duplicates lpattr :key #'car :from-end t))))
+                     ", "))
+         ;; Compute the final output string
          (output (if oldstyle
                      (format "%s" lpattr-str)
-                   (when (> (length lpattr-str-new) 0)
-                     (format "{%s}"
-                             lpattr-str-new)))))
+                   (when (> (length attribute-line) 0)
+                     (format "{%s}" attribute-line)))))
     (when (> (length output) 0)
       (concat
        output
@@ -428,28 +438,25 @@ exported using the blurb notation `X>'. If
 exported as {example} environments, and otherwise handled the
 same as {quiz} environments."
   (let* ((type (org-element-property :type special-block))
-         (caption (org-export-data (org-element-property :caption special-block) info))
-         (lp-char (plist-get org-leanpub-markua-block-mapping (intern type))))
+         (caption (org-export-data (org-element-property :caption special-block) info)))
     (if (or (string-equal type "quiz")
             (and (string-equal type "exercise")
                  (string-equal (plist-get info :ox-markua-export-type) "course")))
-        (let ((id (or (org-element-property :name special-block)
-                      (org-element-property :ID special-block)))
-              (block-value (buffer-substring (org-element-property :contents-begin special-block)
+        (let ((block-value (buffer-substring (org-element-property :contents-begin special-block)
                                              (org-element-property :contents-end special-block))))
           (concat
            (org-leanpub-markua--attribute-line special-block info nil nil type)
-           ;;(format "{%s, id: %s}\n" type id)
            (when (> (length caption) 0) (format "### %s\n" caption))
            (org-leanpub-markua--chomp-end block-value)
            (format "\n{/%s}\n" type)))
-      (concat
-       (org-leanpub-markua--attribute-line special-block info)
-       (replace-regexp-in-string
-        "^" (concat lp-char "> ")
+      (let ((lp-char (plist-get org-leanpub-markua-block-mapping (intern type))))
         (concat
-         (when (> (length caption) 0) (format "### %s\n" caption))
-         (org-leanpub-markua--chomp-end (org-remove-indentation contents))))))))
+         (org-leanpub-markua--attribute-line special-block info)
+         (replace-regexp-in-string
+          "^" (concat lp-char "> ")
+          (concat
+           (when (> (length caption) 0) (format "### %s\n" caption))
+           (org-leanpub-markua--chomp-end (org-remove-indentation contents)))))))))
 
 (defun org-leanpub-markua-link (link contents info)
   "Transcode a LINK object into Markua format.
