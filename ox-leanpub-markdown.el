@@ -71,6 +71,7 @@
                      (link               . org-leanpub-markdown-link)
                      (latex-fragment     . org-leanpub-markdown-latex-fragment)
                      (line-break         . org-leanpub-markdown-line-break)
+                     (paragraph          . org-leanpub-markdown-paragraph)
                      (table              . org-leanpub-markdown-table)
                      (table-cell         . org-leanpub-markdown-table-cell)
                      (table-row          . org-leanpub-markdown-table-row)
@@ -253,6 +254,13 @@ CONTENTS and INFO are also ignored."
   "Return `PLAIN-TEXT' elements as-is.
 CONTENTS is nil.  INFO is a plist holding contextual information."
   plain-text)
+
+(defun org-leanpub-markdown-paragraph (paragraph contents info)
+  "Transcode a PARAGRAPH element from Org to Markdown.
+CONTENTS is the contents of the paragraph, as a string.  INFO is
+the plist used as a communication channel."
+  (concat (org-leanpub-markua--attribute-line paragraph info)
+          (org-md-paragraph paragraph contents info)))
 
 ;;; {lang="python"}
 ;;; ~~~~~~~~
