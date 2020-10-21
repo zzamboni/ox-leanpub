@@ -186,7 +186,13 @@ Example:
 [[file:images/diagram.png]]
 #+end_src
 
-Gets exported as:
+Gets exported in Markua as:
+#+begin_src text
+{width: "30%", id: "system-diagram", caption: "Architecture diagram"}
+![Architecture diagram](images/diagram.png)
+#+end_src
+
+And in LFM as:
 #+begin_src text
 {width: "30%", id: "system-diagram", caption: "Architecture diagram"}
 ![Architecture diagram](images/diagram.png)
