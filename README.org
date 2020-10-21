@@ -23,6 +23,7 @@ If you want to see a real-world example of how to use it, you can find at https:
   - [[#from-source][From source]]
 - [[#usage][Usage]]
   - [[#special-heading-tags][Special heading tags]]
+  - [[#attributes][Attributes]]
   - [[#exporting-books-and-courses][Exporting books and courses]]
   - [[#calling-from-emacs-lisp][Calling from Emacs LISP]]
   - [[#configuration][Configuration]]
@@ -112,6 +113,8 @@ Depending on whether you load the Markua or Markdown exporter, you will see the 
     [b] Book: Whole book          [s] Book: Subset
 #+end_example
 
+The "buffer" and "file" options export the whole file to the corresponding format, but without any further structuring. You can use these if you want to convert a whole book for using with Leanpub's in-browser editor, for example.
+
 The "Book" options do whole-book export in the structure required by Leanpub:
 
 - "Book: Whole book" exports the whole book as one-file-per-chapter;
@@ -167,9 +170,31 @@ If a heading has the =nobook= tag, the [[https://leanpub.com/markua/read#conditi
 
 *Note:* =noexport= and =nobook= are similar but have different semantics. =noexport= is interpreted by Org when exporting your file, and it completely omits the corresponding headings from the output, whereas =nobook= includes the text, but flags it accordingly for Leanpub to ignore it when rendering the final book.
 
+** Attributes
+
+Both LFM and Leanpub support specifying attributes for different elements using /attribute lines/. Both =ox-leanpub-markua= and =ox-leanpub-markdown= support specifying attributes as follows:
+
+- An element's =#+NAME=, =ID= or =CUSTOM_ID=, if specified, are used for the =id= attribute.
+- An element's =#+CAPTION=, if specified, is used for the =caption= attribute in Markua and the =title= attribute in LFM.
+- Other attributes can be specified in an =#+ATTR_LEANPUB= line before the corresponding element. The syntax is the same as for Org header arguments. These are merged with the previous one if specified. Attributes specified in =#+ATTR_LEANPUB= override those specified through other mechanisms.
+
+Example:
+#+begin_src org
+,#+name: system-diagram
+,#+caption: Architecture diagram
+,#+attr_leanpub: :width 30%
+[[file:images/diagram.png]]
+#+end_src
+
+Gets exported as:
+#+begin_src text
+{width: "30%", id: "system-diagram", caption: "Architecture diagram"}
+![Architecture diagram](images/diagram.png)
+#+end_src
+
 ** Exporting books and courses
 
-Leanpub Markua supports exporting both books and courses. The results are largely the same, with currently one exception:
+Leanpub Markua supports exporting both books and courses. The results are largely the same, currently with one exception:
 
 - Org blocks of type =exercise= (=#+begin_exercise= / =#+end_exercise=) are exported as [[https://leanpub.com/markua/read#leanpub-auto-syntactic-sugar-for-specific-blurb-classes-d-e-i-q-t-w-x]["X>" blurbs]] in books, and as [[https://leanpub.com/markua/read#leanpub-auto-quizzes-and-exercises][={exercise}= blocks]] in courses.
 
@@ -177,6 +202,15 @@ You can tell =ox-leanpub= how your buffer should be exported by setting the =#+O
 
 #+begin_src org
 ,#+OX_MARKUA_EXPORT_TYPE: course
+#+end_src
+
+You can also set this parameter for an individual block by specifying the =:export-type= argument in =#+ATTR_LEANPUB=, as follows:
+
+#+begin_src org
+,#+ATTR_LEANPUB: :export-type course
+,#+begin_exercise
+ ...
+,#+end_exercise
 #+end_src
 
 ** Calling from Emacs LISP
