@@ -259,7 +259,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
   "Transcode a PARAGRAPH element from Org to Markdown.
 CONTENTS is the contents of the paragraph, as a string.  INFO is
 the plist used as a communication channel."
-  (concat (org-leanpub-markua--attribute-line paragraph info)
+  (concat (org-leanpub-markdown--attribute-line paragraph info)
           (org-md-paragraph paragraph contents info)))
 
 ;;; {lang="python"}

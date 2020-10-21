@@ -194,7 +194,7 @@ Gets exported in Markua as:
 
 And in LFM as:
 #+begin_src text
-{width: "30%", id: "system-diagram", caption: "Architecture diagram"}
+{width="30%", id="system-diagram", title="Architecture diagram"}
 ![Architecture diagram](images/diagram.png)
 #+end_src
 
