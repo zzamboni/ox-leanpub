@@ -83,68 +83,90 @@
     (:ox-markua-export-type              "OX_MARKUA_EXPORT_TYPE" nil "book" t)))
 
 ;;; Variable definitions
-(defvar org-leanpub-markua-block-mapping
-  '(tip "T"
-        aside "A"
-        warning "W"
-        error "E"
-        note "I"
-        question "Q"
-        discussion "D"
-        center "C"
-        exercise "X")
-  "Mapping from org block types to Markua blurbs.
-The default value corresponds to the blurb types as documentated
-at https://leanpub.com/markua/read#leanpub-auto-blurbs-b-or-blurb
 
-For example:
+;;; Mapping from org blocks to Markua blocks.
+(defvar org-leanpub-markua--block-mapping
+  '(("aside"       "aside" nil)
+    ("blurb"       "blurb" nil)
+    ("center"      "blurb" "center")
+    ("discussion"  "blurb" "discussion")
+    ("error"       "blurb" "error")
+    ("exercise"    "blurb" "exercise")
+    ("information" "blurb" "information")
+    ("note"        "blurb" "information")
+    ("question"    "blurb" "question")
+    ("tip"         "blurb" "tip")
+    ("warning"     "blurb" "warning"))
+  "Mapping from org block types to Markua aside and blurb blocks.
+The default value corresponds to the block types as documentated
+at https://leanpub.com/markua/read#leanpub-auto-asides-a-or-aside
 
-    #+begin_tip
-    This is a tip
-    #+end_tip
+Structure of each element is (org-block markua-block &optional markua-class)
 
-gets exported as
+    Example:            Gets exported as:
 
-    T> This is a tip
+    #+begin_tip         {blurb, class: tip}
+    This is a tip       This is a tip
+    #+end_tip           {/blurb}
+
+    #+begin_aside       {aside}
+    This is an aside    This is an aside
+    #+end_aside         {/aside}
 
 Note that `exercise' blocks get handled differently depending on
 whether you are exporting a book or a course, see the
 documentation for `org-leanpub-markua-special-block' for
 details.")
 
+(defvar org-leanpub-markua--exclude-attributes
+  '(:export-type)
+  "List of ATTR_LEANPUB attributes that are omitted in the Markua output.
+
+You should normally not need to modify this variable.
+
+These are attributes which are used internally by
+`ox-leanpub-markua', but which have to be omitted in the output
+Markua attribute lines.")
+
 ;;; Utility functions
 
-(defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline env-name)
+(defun org-leanpub-markua--attr_leanpub-attrs (elem)
+  "Return an alist containing ELEM's parsed #+ATTR_LEANPUB line, or nil if not specified."
+  (let ((attr-leanpub-str (car (org-element-property :attr_leanpub elem))))
+    (when (string-prefix-p "{" attr-leanpub-str)
+      (lwarn '(ox-leanpub-markua) :warning "Old-style ATTR_LEANPUB lines '{ attr=val, ...}' are no longer supported. Please convert them to the new format ':attr val ...'. Offending line: %s" attr-leanpub-str))
+    (org-babel-parse-header-arguments attr-leanpub-str)))
+
+(defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline exclude-attrs env-name)
   "Generate a Leanpub attribute or environment line.
 Collect #+NAME, #+CAPTION, and any attributes specified as :key
-value in the #+ATTR_LEANPUB line for `ELEM', and put them all
+value in the #+ATTR_LEANPUB line for ELEM, and put them all
 together in a Leanpub-style attribute line of the form {key:
 value,...}. If an attribute is present in both places (e.g. if
 both #+CAPTION and :title are specified), then the values from
 #+ATTR_LEANPUB take precedence.
 
-`INFO' is a plist holding contextual information. `OTHER-ATTRS',
-if given, is an alist holding additional attributes to include.
-`NONEWLINE', supresses a trailing newline in the produced
-attribute line. `ENV-NAME' can be specified to format the line as
-an environment name followed by the attributes, e.g. for a quiz
-or exercise environment in Markua."
+INFO is a plist holding contextual information. OTHER-ATTRS, if
+given, is an alist holding additional attributes to include.
+NONEWLINE, supresses a trailing newline in the produced attribute
+line. EXCLUDE-ATTRS can be used to specify a list of attributes
+to exclude in the output, its default value is
+`org-leanpub-markua--exclude-attributes'. ENV-NAME can be
+specified to format the line as an environment name followed by
+the attributes, e.g. for a quiz or exercise environment in
+Markua."
   (let* (
          ;; Populate initial list with :id and :caption, if given
          (init (list (cons :id (or (org-element-property :name elem)
                                    (org-element-property :ID elem)
                                    (org-element-property :CUSTOM_ID elem)))
                      (cons :caption (org-export-data (caar (org-element-property :caption elem)) info))))
-         ;; Get the value of the #+ATTR_LEANPUB line, if given
-         (lpattr-str (car (org-element-property :attr_leanpub elem)))
          ;; Parse the attributes from #+ATTR_LEANPUB and concatenate with any
          ;; other arguments given, and with the initial list constructed above.
          ;; Earlier elements of the list override later ones.
-         (lpattr (delq nil (append (org-babel-parse-header-arguments lpattr-str) other-attrs init)))
-         ;; Determine if #+ATTR_LEANPUB is given in the "old style"
-         ;; ({attr=value,..}), in which case it is simply passed on to the
-         ;; output (TODO: deprecate)
-         (oldstyle (string-prefix-p "{" lpattr-str))
+         (lpattr (delq nil (append (org-leanpub-markua--attr_leanpub-attrs elem) other-attrs init)))
+         ;;; Use the default value for exclude-attrs if not specified
+         (exclude-attrs (or exclude-attrs org-leanpub-markua--exclude-attributes))
          ;; Build the attribute line to print
          (attribute-line
           (mapconcat #'identity
@@ -153,17 +175,15 @@ or exercise environment in Markua."
                             (list env-name)
                             (mapcar (lambda (elem)
                                       (cl-destructuring-bind (key . val) elem
-                                        (when (> (length val) 0)
+                                        (when (and (> (length val) 0) (not (member key exclude-attrs)))
                                           (format "%s: \"%s\""
                                                   (substring (symbol-name key) 1)
                                                   val))))
                                     (cl-remove-duplicates lpattr :key #'car :from-end t))))
                      ", "))
          ;; Compute the final output string
-         (output (if oldstyle
-                     (format "%s" lpattr-str)
-                   (when (> (length attribute-line) 0)
-                     (format "{%s}" attribute-line)))))
+         (output (when (> (length attribute-line) 0)
+                   (format "{%s}" attribute-line))))
     (when (> (length output) 0)
       (concat
        output
@@ -399,23 +419,25 @@ a communication channel."
 
 (defun org-leanpub-markua-special-block (special-block contents info)
   "Transcode a SPECIAL-BLOCK element from Org to Markua.
-CONTENTS is the already-converted contents of the block. INFO is
-a plist used as a communication channel.
+CONTENTS is the contents of the block. INFO is a plist used as a
+communication channel.
 
-Special blocks are mapped to corresponding Markua blurb types
-according to the documentation at
-https://leanpub.com/markua/read#leanpub-auto-blurbs-b-or-blurb
+Special blocks are mapped to corresponding Markua aside and blurb
+types according to the documentation at
+https://leanpub.com/markua/read#leanpub-auto-asides-a-or-aside
 
 The supported block types and their conversions are defined in
-`org-leanpub-markua-block-mapping'. For example:
+`org-leanpub-markua--block-mapping'.
 
-    #+begin_tip
-    This is a tip
-    #+end_tip
+    Example:            Gets exported as:
 
-gets exported as
+    #+begin_tip         {blurb, class: tip}
+    This is a tip       This is a tip
+    #+end_tip           {/blurb}
 
-    T> This is a tip
+    #+begin_aside       {aside}
+    This is an aside    This is an aside
+    #+end_aside         {/aside}
 
 Blocks of type QUIZ are exported as {quiz} environments according
 to the documentation at
@@ -432,31 +454,34 @@ directly in Markua format.
 
 Blocks of type EXAMPLE are handled differently depending on the
 `#+OX_MARKUA_EXPORT_TYPE' option specified for the current
-buffer. With its default value (`book'), example blocks are
-exported using the blurb notation `X>'. If
-`#+OX_MARKUA_EXPORT_TYPE' is `course', then example blocks are
+buffer, or the `:export-type' option specified in
+`#+ATTR_LEANPUB' for the current block. With its default
+value (`book'), example blocks are exported using the blurb
+notation `X>'. If set to `course', then example blocks are
 exported as {example} environments, and otherwise handled the
 same as {quiz} environments."
   (let* ((type (org-element-property :type special-block))
-         (caption (org-export-data (org-element-property :caption special-block) info)))
+         (caption (org-export-data (org-element-property :caption special-block) info))
+         (lp-attrs (org-leanpub-markua--attr_leanpub-attrs special-block))
+         (export-type (or (alist-get :export-type lp-attrs)
+                          (plist-get info :ox-markua-export-type))))
     (if (or (string-equal type "quiz")
             (and (string-equal type "exercise")
-                 (string-equal (plist-get info :ox-markua-export-type) "course")))
+                 (string-equal export-type "course")))
         (let ((block-value (buffer-substring (org-element-property :contents-begin special-block)
                                              (org-element-property :contents-end special-block))))
           (concat
-           (org-leanpub-markua--attribute-line special-block info nil nil type)
+           (org-leanpub-markua--attribute-line special-block info nil nil nil type)
            (when (> (length caption) 0) (format "### %s\n" caption))
            (org-leanpub-markua--chomp-end block-value)
            (format "\n{/%s}\n" type)))
-      (let ((lp-char (plist-get org-leanpub-markua-block-mapping (intern type))))
+      (cl-destructuring-bind (markua-block &optional markua-class)
+          (alist-get type org-leanpub-markua--block-mapping nil nil #'equal)
         (concat
-         (org-leanpub-markua--attribute-line special-block info)
-         (replace-regexp-in-string
-          "^" (concat lp-char "> ")
-          (concat
-           (when (> (length caption) 0) (format "### %s\n" caption))
-           (org-leanpub-markua--chomp-end (org-remove-indentation contents)))))))))
+         (org-leanpub-markua--attribute-line special-block info (list (cons :class markua-class)) nil nil markua-block)
+         (when (> (length caption) 0) (format "### %s\n" caption))
+         (org-leanpub-markua--chomp-end (org-remove-indentation contents))
+         (format "\n{/%s}\n" markua-block))))))
 
 (defun org-leanpub-markua-link (link contents info)
   "Transcode a LINK object into Markua format.
