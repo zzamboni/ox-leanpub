@@ -4,7 +4,7 @@
 
 ;;; Author: Diego Zamboni <diego@zzamboni.org>
 ;; URL: https://gitlab.com/zzamboni/ox-leanpub
-;; Package-Version: 0.1
+;; Package-Version: 0.2
 ;; Keywords: files, org, wp, markdown, leanpub
 ;; Package-Requires: ((org "9.1") (emacs "26.1"))
 
