@@ -384,12 +384,12 @@ the plist used as a communication channel."
 (defun org-leanpub-markua-src-block (src-block _contents info)
   "Transcode SRC-BLOCK element into Markua format.
 INFO is a plist used as a communication channel."
-  (let* ((use-noweb-ref (plist-get info :ox-markua-use-noweb-ref-as-caption))
+  (let* ((use-noweb-ref (string-equal (plist-get info :ox-markua-use-noweb-ref-as-caption) "true"))
          (do-export (not (member (org-leanpub-markua--get-header-arg :exports src-block) '("results" "none"))))
          (noweb-ref (org-leanpub-markua--get-header-arg :noweb-ref src-block))
          (attrs (list (cons :format (org-element-property :language src-block))
                       (cons :line-numbers (when (org-element-property :number-lines src-block) "true"))
-                      (when use-noweb-ref (cons :caption (when noweb-ref (format "«%s»≡" noweb-ref))))))
+                      (when (and use-noweb-ref noweb-ref) (cons :caption (format "«%s»≡" noweb-ref)))))
          (block-value (org-element-property :value src-block)))
     (when do-export
       (concat
