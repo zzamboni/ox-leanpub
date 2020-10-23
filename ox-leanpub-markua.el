@@ -67,6 +67,7 @@
                      (footnote-reference . org-leanpub-markua-footnote-reference)
                      (headline           . org-leanpub-markua-headline)
                      (item               . org-leanpub-markua-item)
+                     (keyword            . org-leanpub-markua-keyword)
                      (link               . org-leanpub-markua-link)
                      (latex-fragment     . org-leanpub-markua-latex-fragment)
                      (latex-environment  . org-leanpub-markua-latex-environment)
@@ -303,6 +304,14 @@ a communication channel."
             (and contents
                  (concat (and tag ": ")
                          (org-trim (replace-regexp-in-string "^" (make-string (1+ (length bullet)) ?\s) contents)))))))
+
+(defun org-leanpub-markua-keyword (keyword _contents _info)
+  "Transcode a KEYWORD element from Org to Markua."
+  (let ((key (org-element-property :key keyword))
+	(value (org-element-property :value keyword)))
+    (cond
+     ((string= key "MARKUA") value)
+     (t ""))))
 
 (defun org-leanpub-markua-inner-template (contents info)
   "Return complete document string after Markua conversion.
