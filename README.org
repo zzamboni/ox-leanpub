@@ -232,7 +232,7 @@ echo "Hi"
 
 You can configure =ox-leanpub-markua= to automatically generate the caption using the =:tangle= or =:noweb-ref= attributes, if present, using the =#+MARKUA_TANGLE_CAPTION= and =#+MARKUA_NOWEB_REF_CAPTION= options. Either or both of them can be specified, and in that case the caption for the code block is generated automatically. The format of the captions can be configured as well, see [[#configuration][Configuration]] below for the details.
 
-Even when these options are enabled, a manually-specified =#+CAPTION= will always take precedence.
+Even when these options are enabled, a manually specified =#+CAPTION= will always take precedence.
 
 ** Calling from Emacs LISP
 
