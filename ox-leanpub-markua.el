@@ -77,11 +77,16 @@
                      (table-row          . org-gfm-table-row)
                      (table              . org-leanpub-markua-table)
                      (export-block       . org-leanpub-markua-ignore)
+                     (export-snippet     . org-leanpub-markua-ignore)
                      (superscript        . org-leanpub-markua-superscript)
                      (subscript          . org-leanpub-markua-subscript))
   :options-alist
-  '((:ox-markua-use-noweb-ref-as-caption "OX_MARKUA_USE_NOWEB_REF_AS_CAPTION" nil nil t)
-    (:ox-markua-export-type              "OX_MARKUA_EXPORT_TYPE" nil "book" t)))
+  '((:markua-noweb-ref-caption        "MARKUA_NOWEB_REF_CAPTION"        nil nil              t)
+    (:markua-tangle-caption           "MARKUA_TANGLE_CAPTION"           nil nil              t)
+    (:markua-tangle-caption-fmt       "MARKUA_TANGLE_CAPTION_FMT"       nil "[%s]"           t)
+    (:markua-noweb-ref-caption-fmt    "MARKUA_NOWEB_REF_CAPTION_FMT"    nil "«%s»≡"          t)
+    (:markua-tangle-noweb-caption-fmt "MARKUA_TANGLE_NOWEB_CAPTION_FMT" nil "[%1$s] «%2$s»≡" t)
+    (:markua-export-type              "MARKUA_EXPORT_TYPE"              nil "book"           t)))
 
 ;;; Variable definitions
 
@@ -276,9 +281,9 @@ item contents.  INFO is a plist used as a communication channel."
   (let* ((tags (org-export-get-tags headline info))
          (other-attrs (cl-remove-if 'null
                                     (mapcar (lambda (elem)
-                                              (if (string-equal elem "sample")
+                                              (if (string= elem "sample")
                                                   '(:sample . "true")
-                                                (when (string-equal elem "nobook")
+                                                (when (string= elem "nobook")
                                                   '(:book . "false")))) tags))))
     (concat (org-leanpub-markua--attribute-line headline info other-attrs)
             (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info)))))
@@ -380,9 +385,15 @@ the plist used as a communication channel."
                                     (replace-regexp-in-string "\n" " " contents)
                                     nil 'literal)))
 
+;;; Internal functions to get header arguments from a src block
+
+(defun org-leanpub-markua--header-alist (src-block)
+  "Return an alist with all the header arguments of SRC-BLOCK."
+  (org-babel-parse-header-arguments (org-element-property :parameters src-block)))
+
 (defun org-leanpub-markua--get-header-arg (arg src-block)
-  "Get and return a header `ARG' from a `SRC-BLOCK'."
-  (alist-get arg (org-babel-parse-header-arguments (org-element-property :parameters src-block))))
+  "Get and return a single header ARG from a SRC-BLOCK."
+  (alist-get arg (org-leanpub-markua--header-alist src-block)))
 
 ;;; {lang="python"}
 ;;; ~~~~~~~~
@@ -393,20 +404,53 @@ the plist used as a communication channel."
 (defun org-leanpub-markua-src-block (src-block _contents info)
   "Transcode SRC-BLOCK element into Markua format.
 INFO is a plist used as a communication channel."
-  (let* ((use-noweb-ref (string-equal (plist-get info :ox-markua-use-noweb-ref-as-caption) "true"))
-         (do-export (not (member (org-leanpub-markua--get-header-arg :exports src-block) '("results" "none"))))
-         (noweb-ref (org-leanpub-markua--get-header-arg :noweb-ref src-block))
-         (attrs (list (cons :format (org-element-property :language src-block))
-                      (cons :line-numbers (when (org-element-property :number-lines src-block) "true"))
-                      (when (and use-noweb-ref noweb-ref) (cons :caption (format "«%s»≡" noweb-ref)))))
-         (block-value (org-element-property :value src-block)))
+  (let* ((header-args (org-leanpub-markua--header-alist src-block))
+         (do-export (not (member (alist-get :exports header-args) '("results" "none")))))
     (when do-export
-      (concat
-       (org-leanpub-markua--attribute-line src-block info attrs)
-       (format "```\n%s%s```"
-               (org-remove-indentation block-value)
-               ;; Insert a newline if the block doesn't end with one
-               (if (string-suffix-p "\n" block-value) "" "\n"))))))
+      (let* (;; If needed, build caption from :noweb-ref
+             (use-noweb-ref    (plist-get info :markua-noweb-ref-caption))
+             (noweb-ref        (alist-get :noweb-ref header-args))
+             (noweb-ref-fmt    (plist-get info :markua-noweb-ref-caption-fmt))
+             (noweb-caption    (when (and use-noweb-ref noweb-ref)
+                                 (format noweb-ref-fmt noweb-ref)))
+             ;; If needed, build caption from :tangle
+             (use-tangle       (plist-get info :markua-tangle-caption))
+             (tangle-target    (alist-get :tangle header-args))
+             (tangle-file      (unless (member tangle-target '("yes" "no"))
+                                 tangle-target))
+             (tangle-file-fmt  (plist-get info :markua-tangle-caption-fmt))
+             (tangle-caption   (when (and use-tangle tangle-file)
+                                 (format tangle-file-fmt tangle-file)))
+             ;; Compute the final caption
+             (given-caption    (org-element-property :caption src-block))
+             (both-caption-fmt (plist-get info :markua-tangle-noweb-caption-fmt))
+             (built-caption
+              (cond
+               ;; A specified :caption overrides any generated caption
+               (given-caption nil)
+               ;; If both :noweb-ref and :tangle are given, use the corresponding format
+               ((and noweb-caption tangle-caption) (format both-caption-fmt tangle-file noweb-ref))
+               ;; Otherwise use the corresponding individual format
+               (tangle-caption tangle-caption)
+               (noweb-caption noweb-caption)
+               (t nil)))
+             ;; Store relevant attributes in the structure used to construct the
+             ;; Markua attribute line
+             (attrs (list (cons :format
+                                (org-element-property :language src-block))
+                          (cons :line-numbers
+                                (when (org-element-property :number-lines src-block) "true"))
+                          ;; Include a custom :caption only if we have one, to
+                          ;; allow any manually-specified #+caption to be used
+                          (when (org-string-nw-p built-caption)
+                            (cons :caption built-caption))))
+             (block-value (org-element-property :value src-block)))
+        (concat
+         (org-leanpub-markua--attribute-line src-block info attrs)
+         "```\n"
+         (org-remove-indentation block-value)
+         (unless (string-suffix-p "\n" block-value) "\n")
+         "```")))))
 
 ;;; > ~~~~~~~~
 ;;; > 123.0
@@ -462,7 +506,7 @@ special formatting inside the block, you need to specify it
 directly in Markua format.
 
 Blocks of type EXAMPLE are handled differently depending on the
-`#+OX_MARKUA_EXPORT_TYPE' option specified for the current
+`#+MARKUA_EXPORT_TYPE' option specified for the current
 buffer, or the `:export-type' option specified in
 `#+ATTR_LEANPUB' for the current block. With its default
 value (`book'), example blocks are exported using the blurb
@@ -473,10 +517,10 @@ same as {quiz} environments."
          (caption (org-export-data (org-element-property :caption special-block) info))
          (lp-attrs (org-leanpub-markua--attr_leanpub-attrs special-block))
          (export-type (or (alist-get :export-type lp-attrs)
-                          (plist-get info :ox-markua-export-type))))
-    (if (or (string-equal type "quiz")
-            (and (string-equal type "exercise")
-                 (string-equal export-type "course")))
+                          (plist-get info :markua-export-type))))
+    (if (or (string= type "quiz")
+            (and (string= type "exercise")
+                 (string= export-type "course")))
         (let ((block-value (buffer-substring (org-element-property :contents-begin special-block)
                                              (org-element-property :contents-end special-block))))
           (concat
