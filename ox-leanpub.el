@@ -31,12 +31,12 @@
 ;; This package contains three libraries:
 
 ;; - `ox-leanpub-markua.el' exports Org files in Leanpub’s Markua format (see
-;;   URL `https://leanpub.com/markua/read'), the default and recommended format
-;;   for Leanpub books and courses
+;;   `https://leanpub.com/markua/read'), the default and recommended format for
+;;   Leanpub books and courses.
 ;;
 ;; - `ox-leanpub-markdown.el' exports Org files in Leanpub Flavored Markdown
-;;   (LFM) (see URL `https://leanpub.com/lfm/read'), the original markup format
-;;   for Leanpub books.
+;;   (LFM) (see `https://leanpub.com/lfm/read'), the original markup format for
+;;   Leanpub books.
 ;;
 ;; - `ox-leanpub-book.el' exports an Org file in multiple files and directories
 ;;   in the structure required by Leanpub, including the necessary `manuscript/'
@@ -48,9 +48,10 @@
 ;;  Markdown.
 
 ;; If you have any feedback or bug reports, please open an issue at
-;; URL `https://gitlab.com/zzamboni/ox-leanpub/-/issues'.
+;; `https://gitlab.com/zzamboni/ox-leanpub/-/issues'.
 
-;; You can find the full documentation at URL `https://github.com/zzamboni/ox-leanpub'.
+;; See full documentation in the README.org file or at
+;; `https://github.com/zzamboni/ox-leanpub'.
 
 ;;; Code:
 
@@ -60,4 +61,5 @@
 (org-leanpub-book-setup-menu-markua)
 
 (provide 'ox-leanpub)
+
 ;;; ox-leanpub.el ends here

@@ -23,23 +23,12 @@
 
 ;;; Commentary:
 
-;;; Adaptation of ox-md.el to make the exported markdown work
-;;; better for Leanpub (https://leanpub.com) publication.  It handles
-;;; footnotes, and makes source code separated from its output, and
-;;; the output does not display line numbers.  Html blocks are
-;;; ignored.  Links with IDs work.  Tables are exported as they are in
-;;; orgmode, which is pretty much what Leanpub's markdown accepts.
-;;; The #+NAME and #+CAPTION attributes of an object are converted to
-;;; the LeanPub "id" and "title" attributes.  Other attributes
-;;; specified in an #+ATTR_LEANPUB line are included as-is.  For example:
-;;;
-;;; #+NAME: some-id
-;;; #+CAPTION: Some name
-;;; #+ATTR_LEANPUB: :width wide
-;;;
-;;; Get converted to the following line, included before the corresponding element:
-;;;
-;;; {id="some-id", title="Some name", width="wide"}
+;; Export Org files in Leanpub Flavored Markdown (LFM) (see
+;; `https://leanpub.com/lfm/read'), the original markup format for Leanpub
+;; books.
+
+;; See full documentation in the README.org file or at
+;; `https://github.com/zzamboni/ox-leanpub'.
 
 ;;; Code:
 

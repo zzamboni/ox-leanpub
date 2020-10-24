@@ -22,21 +22,12 @@
 
 ;;; Commentary:
 
-;;; Adaptation of ox-leanpub-markdown.el to use Markua markup as used
-;;; by Leanpub (https://leanpub.com/markua/read).  Tables are exported
-;;; in Github Flavored Markdown, which is supported by Markua, using
-;;; ox-gfm (https://github.com/larstvei/ox-gfm).  The #+NAME and
-;;; #+CAPTION attributes of an object are converted to the LeanPub
-;;; "id" and "title" attributes.  Other attributes specified in an
-;;; #+ATTR_LEANPUB line are included as-is.  For example:
-;;;
-;;; #+NAME: some-id
-;;; #+CAPTION: Some name
-;;; #+ATTR_LEANPUB: :width wide
-;;;
-;;; Get converted to the following line, included before the corresponding element:
-;;;
-;;; {id="some-id", title="Some name", width="wide"}
+;; Export Org files in Leanpub’s Markua format (see
+;; `https://leanpub.com/markua/read'), the default and recommended format for
+;; Leanpub books and courses.
+;;
+;; See full documentation in the README.org file or at
+;; `https://github.com/zzamboni/ox-leanpub'.
 
 ;;; Code:
 

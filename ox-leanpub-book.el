@@ -1,8 +1,8 @@
-;;; ox-leanpub-book.el --- Export an org-file to LeanPub's multifile setup  -*- lexical-binding: t; -*-
+;;; ox-leanpub-book.el --- Export an Org file to LeanPub multifile setup  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019-2020 Diego Zamboni
 
-;;; Author: Diego Zamboni <diego@zzamboni.org>
+;; Author: Diego Zamboni <diego@zzamboni.org>
 ;; URL: https://gitlab.com/zzamboni/ox-leanpub
 ;; Package-Version: 0.2
 ;; Keywords: files, org, wp, markdown, leanpub
@@ -22,60 +22,14 @@
 
 ;;; Commentary:
 
-;;; (based originally on code by Lakshmi Narasimhan, published at
-;;; https://medium.com/@lakshminp/publishing-a-book-using-org-mode-9e817a56d144,
-;;; but heavily modified)
-;;;
-;;; New export backend called leanpub-book, which creates a new export
-;;; section under the corresponding markua or makdown section with the
-;;; following items:
-;;;
-;;; - "Book: Whole book", which exports the whole book using default
-;;;   settings (see below);
-;;;
-;;; - "Book: Subset", which exports the subset files and the Subset.txt file,
-;;;   according to the rules below. See https://leanpub.com/help/api#previewing
-;;;   for more information about Subset previews.
-;;;
-;;; The export splits chapters into files by top-level headline, and
-;;; automatically populates the `Book.txt', `Sample.txt' and
-;;; `Subset.txt' files used by LeanPub.
-;;;
-;;; The exported files are written to the `manuscript/' subdirectory
-;;; by default, which is what LeanPub expects.  This default allows
-;;; you to keep the book's main `org' file in the top-level directory
-;;; of a repository, and to automatically write the output files to
-;;; `manuscript/' so that LeanPub can process them.  The output
-;;; directory can be changed using the `#+LEANPUB_OUTPUT_DIR' file
-;;; property, for example if you want to export to the current
-;;; directory, you can use:
-;;;
-;;;   #+LEANPUB_OUTPUT_DIR: .
-;;;
-;;; The book files are populated as follows:
-;;;
-;;; - `Book.txt' with all chapters, except those tagged with `noexport'.
-;;; - `Sample.txt' with all chapters tagged with `sample', only for
-;;;   Markdown exports.  In Markua exports, the conditional attributes
-;;;   are used, as documented in https://leanpub.com/markua/read#conditional-inclusion.
-;;; - `Subset.txt' with chapters depending on the value of the
-;;;   `#+LEANPUB_WRITE_SUBSET' file property (if set):
-;;;   - `none' (default): not created.
-;;;   - `tagged': use all chapters tagged `subset'.
-;;;   - `all': use the same chapters as `Book.txt'.
-;;;   - `sample': use same chapters as `Sample.txt'.
-;;;   - `current': export the current chapter (where the cursor is at the moment
-;;;     of the export) as the contents of `Subset.txt'. This can also be set
-;;;     temporarily for a single export by pressing `C-s' in the export screen
-;;;     to set "Export scope" to "Subtree".
-;;;
-;;; If a heading has the `frontmatter', `mainmatter' or `backmatter' tags,
-;;; the corresponding markup is inserted in the output, before the
-;;; headline.  This way, you only need to tag the first chapter of the
-;;; front, main, and backmatter, respectively.
-;;;
-;;; Each section's headline is exported as part of its corresponding
-;;; output file.
+;; Export an Org file in multiple files and directories in the structure
+;; required by Leanpub, including the necessary `manuscript/' directory and the
+;; `Book.txt', `Sample.txt' and `Subset.txt' files. It can use either Markua or
+;; LFM as the export backend through the `ox-leanpub-markua' and
+;; `ox-leanpub-markdown' libraries.
+;;
+;; See full documentation in the README.org file or at
+;; `https://github.com/zzamboni/ox-leanpub'.
 
 ;;; Code:
 
