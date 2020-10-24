@@ -269,15 +269,7 @@ The modules provide reasonable defaults, but you can configure some parameters b
 
 * Check out my books!
 
-If you have read this far, check out my books at Leanpub!
-
-#+begin_html
-<iframe width='160' height='400'" src='https://leanpub.com/emacs-org-leanpub/embed' frameborder='0' allowtransparency='true'></iframe></iframe>&nbsp;
-<iframe width='160' height='400'" src='https://leanpub.com/lit-config/embed' frameborder='0' allowtransparency='true'></iframe></iframe>&nbsp;
-<iframe width='160' height='400'" src='https://leanpub.com/learning-hammerspoon/embed' frameborder='0' allowtransparency='true'></iframe></iframe>&nbsp;
-<iframe width='160' height='400'" src='https://leanpub.com/learning-cfengine/embed' frameborder='0' allowtransparency='true'></iframe></iframe>&nbsp;
-<iframe width='160' height='400'" src='https://leanpub.com/utilerias-unix/embed' frameborder='0' allowtransparency='true'></iframe></iframe>
-#+end_html
+If you have read this far, check out [[https://leanpub.com/u/zzamboni][my books at Leanpub]]!
 
 * Disclaimer
 
