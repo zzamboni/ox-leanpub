@@ -235,16 +235,17 @@ a communication channel.  This is the same function as
                       (let ((todo (org-element-property :todo-keyword
                                                         headline)))
                         (and todo (concat (org-export-data todo info) " ")))))
+           (tag-list (org-export-get-tags headline info))
            (tags (and (plist-get info :with-tags)
-                      (let ((tag-list (org-export-get-tags headline info)))
-                        (and tag-list
-                             (concat "     " (format ":%s:" (mapconcat #'identity tag-list ":")))))))
+                      (and tag-list
+                           (concat "     " (format ":%s:" (mapconcat #'identity tag-list ":"))))))
+           (is-part (and (member "part" tag-list) (= level 1)))
            (priority
             (and (plist-get info :with-priority)
                  (let ((char (org-element-property :priority headline)))
                    (and char (format "[#%c] " char)))))
            ;; Headline text without tags.
-           (heading (concat todo priority title))
+           (heading (concat todo priority title (when is-part " #")))
            (style (plist-get info :md-headline-style)))
       (cond
        ;; Cannot create a headline.  Fall-back to a list.

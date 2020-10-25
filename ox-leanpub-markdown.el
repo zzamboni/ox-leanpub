@@ -152,10 +152,9 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
             (org-element-property :value latex-fragment)))))
 
 (defun org-leanpub-markdown-headline-without-anchor (headline contents info)
-  "Transcode `HEADLINE' element into Markdown format.
-`CONTENTS' is the headline contents.  `INFO' is a plist used as
-a communication channel.  This is the same function as
-`org-md-headline' but without inserting the <a> anchors."
+  "Transcode HEADLINE element into Markdown format.
+CONTENTS is the headline contents. INFO is a plist used as a
+communication channel."
   (unless (org-element-property :footnote-section-p headline)
     (let* ((level (org-export-get-relative-level headline info))
            (title (org-export-data (org-element-property :title headline) info))
@@ -163,10 +162,11 @@ a communication channel.  This is the same function as
                       (let ((todo (org-element-property :todo-keyword
                                                         headline)))
                         (and todo (concat (org-export-data todo info) " ")))))
+           (tag-list (org-export-get-tags headline info))
            (tags (and (plist-get info :with-tags)
-                      (let ((tag-list (org-export-get-tags headline info)))
-                        (and tag-list
-                             (concat "     " (format ":%s:" (mapconcat #'identity tag-list ":")))))))
+                      (and tag-list
+                           (concat "     " (format ":%s:" (mapconcat #'identity tag-list ":"))))))
+           (is-part (and (member "part" tag-list) (= level 1)))
            (priority
             (and (plist-get info :with-priority)
                  (let ((char (org-element-property :priority headline)))
@@ -188,6 +188,10 @@ a communication channel.  This is the same function as
                          "."))))
           (concat bullet (make-string (- 4 (length bullet)) ?\s) heading tags "\n\n"
                   (and contents (replace-regexp-in-string "^" "    " contents)))))
+       (is-part
+        (concat "\n-"
+                (substring (org-md--headline-title style level heading nil tags) 1)
+                contents))
        (t
         (concat (org-md--headline-title style level heading nil tags)
                 contents))))))
