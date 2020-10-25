@@ -91,14 +91,14 @@ produced attribute line."
          (printed '())
          (lpattr-str-new (mapconcat #'identity
                                     (cl-remove-if #'null
-                                               (mapcar (lambda (elem)
-                                                         (let* ((keysym (car elem))
-                                                                (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
-                                                                (val (cdr elem)))
-                                                           (when (and (> (length val) 0) (not (plist-member printed keysym)))
-                                                             (setq printed (plist-put printed keysym t))
-                                                             (format "%s=\"%s\"" keystr val))))
-                                                       lpattr)) ", "))
+                                                  (mapcar (lambda (elem)
+                                                            (let* ((keysym (car elem))
+                                                                   (keystr (apply #'string (cdr (string-to-list (symbol-name keysym)))))
+                                                                   (val (cdr elem)))
+                                                              (when (and (> (length val) 0) (not (plist-member printed keysym)))
+                                                                (setq printed (plist-put printed keysym t))
+                                                                (format "%s=\"%s\"" keystr val))))
+                                                          lpattr)) ", "))
          (output (if oldstyle
                      (format "%s" lpattr-str)
                    (when (> (length lpattr-str-new) 0)
@@ -208,7 +208,7 @@ definitions at the end."
    contents
    "\n\n"
    (let ((definitions (org-export-collect-footnote-definitions
-		                   info
+                       info
                        (plist-get info :parse-tree))))
      ;; Looks like leanpub do not like : in labels.
      (mapconcat (lambda (ref)
