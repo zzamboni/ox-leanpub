@@ -157,7 +157,7 @@ Markua."
          (init (list (cons :id (or (org-element-property :name elem)
                                    (org-element-property :ID elem)
                                    (org-element-property :CUSTOM_ID elem)))
-                     (cons :caption (org-export-data (caar (org-element-property :caption elem)) info))))
+                     (cons :caption (org-export-data (org-export-get-caption elem) info))))
          ;; Parse the attributes from #+ATTR_LEANPUB and concatenate with any
          ;; other arguments given, and with the initial list constructed above.
          ;; Earlier elements of the list override later ones.
@@ -506,7 +506,7 @@ notation `X>'. If set to `course', then example blocks are
 exported as {example} environments, and otherwise handled the
 same as {quiz} environments."
   (let* ((type (org-element-property :type special-block))
-         (caption (org-export-data (org-element-property :caption special-block) info))
+         (caption (org-export-data (org-export-get-caption special-block) info))
          (lp-attrs (org-leanpub-markua--attr_leanpub-attrs special-block))
          (export-type (or (alist-get :export-type lp-attrs)
                           (plist-get info :markua-export-type))))
