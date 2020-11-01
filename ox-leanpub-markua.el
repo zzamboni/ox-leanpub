@@ -131,7 +131,7 @@ Markua attribute lines.")
   "Return an alist containing ELEM's parsed #+ATTR_LEANPUB line, or nil if not specified."
   (let ((attr-leanpub-str (car (org-element-property :attr_leanpub elem))))
     (when (string-prefix-p "{" attr-leanpub-str)
-      (lwarn '(ox-leanpub-markua) :warning "Old-style ATTR_LEANPUB lines '{ attr=val, ...}' are no longer supported. Please convert them to the new format ':attr val ...'. Offending line: %s" attr-leanpub-str))
+      (lwarn '(ox-leanpub-markua) :warning "Old-style ATTR_LEANPUB format '%s' no longer supported. Please use format ':attr val ...'" attr-leanpub-str))
     (org-babel-parse-header-arguments attr-leanpub-str)))
 
 (defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline exclude-attrs env-name)
