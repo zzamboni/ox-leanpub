@@ -64,6 +64,7 @@
                      (latex-environment  . org-leanpub-markua-latex-environment)
                      (line-break         . org-leanpub-markua-line-break)
                      (paragraph          . org-leanpub-markua-paragraph)
+                     (quote-block        . org-leanpub-markua-quote-block)
                      (table-cell         . org-gfm-table-cell)
                      (table-row          . org-gfm-table-row)
                      (table              . org-leanpub-markua-table)
@@ -376,6 +377,17 @@ the plist used as a communication channel."
           (replace-regexp-in-string "{{markua:linebreak}}" "\n"
                                     (replace-regexp-in-string "\n" " " contents)
                                     nil 'literal)))
+
+;;; Quote blocks
+
+(defun org-leanpub-markua-quote-block (quote-block contents info)
+  "Transcode QUOTE-BLOCK element into Markua format.
+CONTENTS is the quote-block contents.  INFO is a plist used as
+a communication channel."
+  (concat
+   (org-leanpub-markua--attribute-line quote-block info)
+   (format "{blockquote}\n%s\n{/blockquote}\n"
+           (org-leanpub-markua--chomp-end (org-remove-indentation contents)))))
 
 ;;; Internal functions to get header arguments from a src block
 
