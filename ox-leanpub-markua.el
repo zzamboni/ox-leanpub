@@ -529,7 +529,7 @@ same as {quiz} environments."
                     (cl-destructuring-bind (block args) (s-split-up-to " " line 1)
                       (list block "blurb"
                             (org-babel-parse-header-arguments (s-trim args)))))
-                  (s-split "\n" (plist-get info :markua-block))))
+                  (s-lines (plist-get info :markua-block))))
          (all-blocks (append user-defined-blocks org-leanpub-markua--block-mapping)))
     (if (or (string= type "quiz")
             (and (string= type "exercise")
