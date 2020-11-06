@@ -6,7 +6,7 @@
 ;; URL: https://gitlab.com/zzamboni/ox-leanpub
 ;; Package-Version: 0.2
 ;; Keywords: files, org, wp, markdown, leanpub, markua
-;; Package-Requires: ((org "9.1") (ox-gfm "1.0") (emacs "26.1"))
+;; Package-Requires: ((org "9.1") (ox-gfm "1.0") (emacs "26.1") (s "1.12.0"))
 
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@
 (require 'ob-core)
 (require 'subr-x)
 (require 'ox-gfm)
+(require 's)
 
 ;;; Define Back-End
 
@@ -78,7 +79,8 @@
     (:markua-tangle-caption-fmt       "MARKUA_TANGLE_CAPTION_FMT"       nil "[%s]"           t)
     (:markua-noweb-ref-caption-fmt    "MARKUA_NOWEB_REF_CAPTION_FMT"    nil "«%s»≡"          t)
     (:markua-tangle-noweb-caption-fmt "MARKUA_TANGLE_NOWEB_CAPTION_FMT" nil "[%1$s] «%2$s»≡" t)
-    (:markua-export-type              "MARKUA_EXPORT_TYPE"              nil "book"           t)))
+    (:markua-export-type              "MARKUA_EXPORT_TYPE"              nil "book"           t)
+    (:markua-block                    "MARKUA_BLOCK"                    nil nil              newline)))
 
 ;;; Variable definitions
 
@@ -86,15 +88,15 @@
 (defvar org-leanpub-markua--block-mapping
   '(("aside"       "aside" nil)
     ("blurb"       "blurb" nil)
-    ("center"      "blurb" "center")
-    ("discussion"  "blurb" "discussion")
-    ("error"       "blurb" "error")
-    ("exercise"    "blurb" "exercise")
-    ("information" "blurb" "information")
-    ("note"        "blurb" "information")
-    ("question"    "blurb" "question")
-    ("tip"         "blurb" "tip")
-    ("warning"     "blurb" "warning"))
+    ("center"      "blurb" ((:class . "center")))
+    ("discussion"  "blurb" ((:class . "discussion")))
+    ("error"       "blurb" ((:class . "error")))
+    ("exercise"    "blurb" ((:class . "exercise")))
+    ("information" "blurb" ((:class . "information")))
+    ("note"        "blurb" ((:class . "information")))
+    ("question"    "blurb" ((:class . "question")))
+    ("tip"         "blurb" ((:class . "tip")))
+    ("warning"     "blurb" ((:class . "warning"))))
   "Mapping from org block types to Markua aside and blurb blocks.
 The default value corresponds to the block types as documentated
 at https://leanpub.com/markua/read#leanpub-auto-asides-a-or-aside
@@ -521,7 +523,14 @@ same as {quiz} environments."
          (caption (org-export-data (org-export-get-caption special-block) info))
          (lp-attrs (org-leanpub-markua--attr_leanpub-attrs special-block))
          (export-type (or (alist-get :export-type lp-attrs)
-                          (plist-get info :markua-export-type))))
+                          (plist-get info :markua-export-type)))
+         (user-defined-blocks
+          (mapcar (lambda (line)
+                    (cl-destructuring-bind (block args) (s-split-up-to " " line 1)
+                      (list block "blurb"
+                            (org-babel-parse-header-arguments (s-trim args)))))
+                  (s-split "\n" (plist-get info :markua-block))))
+         (all-blocks (append user-defined-blocks org-leanpub-markua--block-mapping)))
     (if (or (string= type "quiz")
             (and (string= type "exercise")
                  (string= export-type "course")))
@@ -532,10 +541,10 @@ same as {quiz} environments."
            (when (> (length caption) 0) (format "### %s\n" caption))
            (org-leanpub-markua--chomp-end block-value)
            (format "\n{/%s}\n" type)))
-      (cl-destructuring-bind (markua-block &optional markua-class)
-          (alist-get type org-leanpub-markua--block-mapping nil nil #'equal)
+      (cl-destructuring-bind (markua-block &optional markua-attributes)
+          (alist-get type all-blocks nil nil #'equal)
         (concat
-         (org-leanpub-markua--attribute-line special-block info (list (cons :class markua-class)) nil nil markua-block)
+         (org-leanpub-markua--attribute-line special-block info markua-attributes nil nil markua-block)
          (when (> (length caption) 0) (format "### %s\n" caption))
          (org-leanpub-markua--chomp-end (org-remove-indentation contents))
          (format "\n{/%s}\n" markua-block))))))

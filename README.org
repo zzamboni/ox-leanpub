@@ -26,6 +26,7 @@ If you want to see a real-world example of how to use it, you can find at https:
 - [[#usage][Usage]]
   - [[#special-heading-tags][Special heading tags]]
   - [[#attributes][Attributes]]
+  - [[#block-elements][Block elements]]
   - [[#exporting-books-and-courses][Exporting books and courses]]
   - [[#code-block-captions][Code block captions]]
   - [[#calling-from-emacs-lisp][Calling from Emacs LISP]]
@@ -203,6 +204,68 @@ And in LFM as:
 ![Architecture diagram](images/diagram.png)
 #+end_src
 
+** Block elements
+:PROPERTIES:
+:CUSTOM_ID: block-elements
+:END:
+
+=ox-leanpub= supports all Leanpub [[https://leanpub.com/markua/read#leanpub-auto-block-elements][block elements]] in Markua export:
+
+| Block type              | Gets exported as              |
+|-------------------------+-------------------------------|
+| =#+begin/end_quote=       | ={blockquote}=                  |
+| =#+begin/end_aside=       | ={aside}=                       |
+| =#+begin/end_blurb=       | ={blurb}=                       |
+| =#+begin/end_center=      | ={blurb, class: "center"}=      |
+| =#+begin/end_discussion=  | ={blurb, class: "discussion"}=  |
+| =#+begin/end_error=       | ={blurb, class: "error"}=       |
+| =#+begin/end_exercise=    | ={blurb, class: "exercise"}=    |
+| =#+begin/end_information= | ={blurb, class: "information"}= |
+| =#+begin/end_note=        | ={blurb, class: "information"}= |
+| =#+begin/end_question=    | ={blurb, class: "question"}=    |
+| =#+begin/end_tip=         | ={blurb, class: "tip"}=         |
+| =#+begin/end_warning=     | ={blurb, class: "warning"}=     |
+
+You can specify a [[https://leanpub.com/markua/read#leanpub-auto-using-extension-attributes-on-blurbs-to-add-icon-support][custom icon]] for a block using the =:icon= attribute in an =#+ATTR_LEANPUB= line. For example:
+
+#+begin_src org
+,#+ATTR_LEANPUB: :icon github
+,#+begin_tip
+Tip with a GitHub icon instead of the default.
+,#+end_tip
+#+end_src
+
+You can change the default icon for a block for the whole document, or you can even define your own block types, by using =#+MARKUA_BLOCK= lines. The syntax is:
+
+#+begin_src org
+,#+MARKUA_BLOCK: blockname [:class classname] [:icon iconname]
+#+end_src
+
+Where =blockname= and at least one of =:class= or =:icon= needs to be specified:
+- =blockname= is the name of the block to define. Can be one of the existing block names (to redefine it) or a new one.
+- =classname= (optional) is the name of an existing supported Markua block class (as listed in the table above). It can be omitted to use a plain ={blurb}= block.
+- =iconname= (optional) is a [[https://leanpub.com/markua/read#leanpub-auto-using-extension-attributes-on-blurbs-to-add-icon-support][valid icon name]] to use for the block.
+
+You can define multiple block types, each on their own =#+MARKUA_BLOCK= line. For example, you can change the default icon of =tip= blocks to be a lightbulb instead of the default key icon:
+
+#+begin_src org
+,#+MARKUA_BLOCK: tip :class tip :icon lightbulb
+
+,#+begin_tip
+Tip with a lightbulb!
+,#+end_tip
+#+end_src
+
+You can also define completely new block types:
+
+#+begin_src org
+,#+MARKUA_BLOCK: leanpub :icon leanpub
+
+,#+begin_leanpub
+Leanpub block!
+,#+end_leanpub
+#+end_src
+
 ** Exporting books and courses
 
 Leanpub Markua supports exporting both books and courses. The results are largely the same, currently with one exception:
@@ -262,6 +325,7 @@ The modules provide reasonable defaults, but you can configure some parameters b
 | =#+MARKUA_TANGLE_CAPTION_FMT=        | "[%s]"           | Format to use for captions generated from the =:tangle= attribute. The string =%s= is replaced by the =:tangle= value.                                                                                                                                                                          |
 | =#+MARKUA_TANGLE_NOWEB_CAPTION_FMT=  | "[%1$s] «%2$s»≡" | Format to use when both =:noweb-ref= and =:tangle= are used to generate the caption. The string =%1$s= is replaced by the value of =:tangle=, and =%2$s= by the value of =:noweb-ref=.                                                                                                                |
 | =#+MARKUA_EXPORT_TYPE=               | "book"           | (only for Markua export) Determines the type of export being done. Valid values are "book" and "course".                                                                                                                                                                                  |
+| =#+MARKUA_BLOCK=                     | =nil=              | Redefine or define a new block type. See [[#block-elements][Block Elements]] for the syntax details.                                                                                                                                                                                                           |
 
 * Credits
 
