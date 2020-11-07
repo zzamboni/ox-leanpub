@@ -18,10 +18,10 @@ If you have any feedback or bug reports, please open an issue at https://gitlab.
 
 If you want to see a real-world example of how to use it, you can find at https://github.com/zzamboni/emacs-org-leanpub the source of my book [[https://leanpub.com/emacs-org-leanpub][Publishing with Emacs, Org-mode and Leanpub]].
 
-* Table of Contents :toc:
+* Table of Contents :toc:noexport:
 - [[#installation][Installation]]
   - [[#from-melpa][From MELPA]]
-  - [[#doom-emacs][Doom Emacs]]
+  - [[#in-doom-emacs][In Doom Emacs]]
   - [[#from-source][From source]]
 - [[#usage][Usage]]
   - [[#special-heading-tags][Special heading tags]]
@@ -58,7 +58,7 @@ By default, the =ox-leanpub= module sets things up for exporting books in Markua
     (org-leanpub-book-setup-menu-markdown))
 #+end_src
 
-** Doom Emacs
+** In Doom Emacs
 
 If you use [[https://github.com/hlissner/doom-emacs/][Doom Emacs]],  add the following line to your =packages.el= file:
 
@@ -317,26 +317,26 @@ The modules provide reasonable defaults, but you can configure some parameters b
 
 | *Keyword*                            | *Default value*    | *Description*                                                                                                                                                                                                                                                                               |
 | =#+LEANPUB_BOOK_OUTPUT_DIR=          | "manuscript"     | Subdirectory where the exported files will be created.                                                                                                                                                                                                                                    |
-| =#+LEANPUB_BOOK_WRITE_SUBSET=        | "none"           | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                                                |
 | =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= | =nil=              | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title. Note that if a chapter title has changed since the last export, it will be exported to a new filename, but the old file will not be deleted, you need to do this manually. |
-| =#+MARKUA_NOWEB_REF_CAPTION=         | =nil=              | (only for Markua export) If set (regardless of its value), use the value of the =:noweb-ref= header argument for the caption of source code blocks.                                                                                                                                         |
-| =#+MARKUA_TANGLE_CAPTION=            | nil              | (only for Markua export) If set (regardless of its value), use the value of the =:tangle= header argument for the caption of source code blocks.                                                                                                                                            |
-| =#+MARKUA_NOWEB_REF_CAPTION_FMT=     | "«%s»≡"          | Format to use for captions generated from the =:noweb-ref= attribute. The string =%s= is replaced by the =:noweb-ref= value. The default value can be used (depending on the formatting of your book) to emulate the default output format produced by [[https://en.wikipedia.org/wiki/Noweb][noweb]].                                   |
-| =#+MARKUA_TANGLE_CAPTION_FMT=        | "[%s]"           | Format to use for captions generated from the =:tangle= attribute. The string =%s= is replaced by the =:tangle= value.                                                                                                                                                                          |
-| =#+MARKUA_TANGLE_NOWEB_CAPTION_FMT=  | "[%1$s] «%2$s»≡" | Format to use when both =:noweb-ref= and =:tangle= are used to generate the caption. The string =%1$s= is replaced by the value of =:tangle=, and =%2$s= by the value of =:noweb-ref=.                                                                                                                |
+| =#+LEANPUB_BOOK_WRITE_SUBSET=        | "none"           | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                                                |
+| =#+MARKUA_BLOCK=                     | =nil=              | Redefine or define a new block type. See [[#block-elements][Block Elements]] for the syntax details.
 | =#+MARKUA_EXPORT_TYPE=               | "book"           | (only for Markua export) Determines the type of export being done. Valid values are "book" and "course".                                                                                                                                                                                  |
-| =#+MARKUA_BLOCK=                     | =nil=              | Redefine or define a new block type. See [[#block-elements][Block Elements]] for the syntax details.                                                                                                                                                                                                           |
+| =#+MARKUA_NOWEB_REF_CAPTION=         | =nil=              | (only for Markua export) If set (regardless of its value), use the value of the =:noweb-ref= header argument for the caption of source code blocks.                                                                                                                                         |
+| =#+MARKUA_NOWEB_REF_CAPTION_FMT=     | "«%s»≡"          | Format to use for captions generated from the =:noweb-ref= attribute. The string =%s= is replaced by the =:noweb-ref= value. The default value can be used (depending on the formatting of your book) to emulate the default output format produced by [[https://en.wikipedia.org/wiki/Noweb][noweb]].                                   |
+| =#+MARKUA_TANGLE_CAPTION=            | nil              | (only for Markua export) If set (regardless of its value), use the value of the =:tangle= header argument for the caption of source code blocks.                                                                                                                                            |
+| =#+MARKUA_TANGLE_CAPTION_FMT=        | "[%s]"           | Format to use for captions generated from the =:tangle= attribute. The string =%s= is replaced by the =:tangle= value.                                                                                                                                                                          |
+| =#+MARKUA_TANGLE_NOWEB_CAPTION_FMT=  | "[%1$s] «%2$s»≡" | Format to use when both =:noweb-ref= and =:tangle= are used to generate the caption. The string =%1$s= is replaced by the value of =:tangle=, and =%2$s= by the value of =:noweb-ref=.                                                                                                                |                                                                                      |
 
 * Credits
 
 - The original version of =ox-leanpub-markdown.el= was written by [[http://juanreyero.com/open/ox-leanpub/index.html][Juan Reyero]] as =ox-leanpub.el= and is still available at https://github.com/juanre/ox-leanpub. I made many changes to fix some bugs and process additional markup elements, and =ox-leanpub-markua.el= is also derived from it. This repository started as a fork of the original, but given the amount of changes I have recreated it as a standalone repo, to avoid confusion.
-- =ox-leanpub-book.el= is based originally on [[https://medium.com/@lakshminp/publishing-a-book-using-org-mode-9e817a56d144][code by Lakshmi Narasimhan]], but also heavily modified.
+- =ox-leanpub-book.el= was based originally on [[https://medium.com/@lakshminp/publishing-a-book-using-org-mode-9e817a56d144][code by Lakshmi Narasimhan]], but also heavily modified.
 - =ox-leanpub-markua.el= delegates the work of exporting tables to [[https://github.com/larstvei/ox-gfm][ox-gfm]].
 
 * Check out my books!
 
-If you have read this far, check out [[https://leanpub.com/u/zzamboni][my books at Leanpub]]!
+If you find this package useful, consider supporting me by purchasing my book [[https://leanpub.com/emacs-org-leanpub][Publishing with Emacs, Org-mode and Leanpub]], or any of my other [[https://leanpub.com/u/zzamboni][books at Leanpub]]!
 
 * Disclaimer
 
-- I am in no way associated with Leanpub other than being a happy author. Leanpub is not responsible for this code.
+I am not associated with Leanpub other than being a happy author. Leanpub is not responsible for this code.
