@@ -80,12 +80,13 @@
     (:markua-noweb-ref-caption-fmt    "MARKUA_NOWEB_REF_CAPTION_FMT"    nil "«%s»≡"          t)
     (:markua-tangle-noweb-caption-fmt "MARKUA_TANGLE_NOWEB_CAPTION_FMT" nil "[%1$s] «%2$s»≡" t)
     (:markua-export-type              "MARKUA_EXPORT_TYPE"              nil "book"           t)
+    (:markua-block-caption-level      "MARKUA_BLOCK_CAPTION_LEVEL"      nil "below"          t)
     (:markua-block                    "MARKUA_BLOCK"                    nil nil              newline)))
 
 ;;; Variable definitions
 
 ;;; Mapping from org blocks to Markua blocks.
-(defvar org-leanpub-markua--block-mapping
+(defvar org-leanpub-markua--block-definitions
   '(("aside"       "aside" nil)
     ("blurb"       "blurb" nil)
     ("center"      "blurb" ((:class . "center")))
@@ -101,7 +102,9 @@
 The default value corresponds to the block types as documentated
 at https://leanpub.com/markua/read#leanpub-auto-asides-a-or-aside
 
-Structure of each element is (org-block markua-block &optional markua-class)
+Structure of each element is `(org-block markua-block markua-attributes)',
+where `markua-attributes' is an alist of `(:attr . \"value\")' pairs
+which will be specified for the generated block.
 
     Example:            Gets exported as:
 
@@ -119,7 +122,7 @@ documentation for `org-leanpub-markua-special-block' for
 details.")
 
 (defvar org-leanpub-markua--exclude-attributes
-  '(:export-type)
+  '(:export-type :caption-level)
   "List of ATTR_LEANPUB attributes that are omitted in the Markua output.
 
 You should normally not need to modify this variable.
@@ -175,7 +178,8 @@ Markua."
                             (list env-name)
                             (mapcar (lambda (elem)
                                       (cl-destructuring-bind (key . val) elem
-                                        (when (and (> (length val) 0) (not (member key exclude-attrs)))
+                                        (when (and (not (member key exclude-attrs))
+                                                   (or (numberp val) (> (length val) 0)))
                                           (format "%s: \"%s\""
                                                   (substring (symbol-name key) 1)
                                                   val))))
@@ -476,6 +480,47 @@ CONTENTS holds the contents of the block. INFO is a plist used as
 a communication channel."
   (org-leanpub-markua-src-block src-block contents info))
 
+;; Internal function to get the headline with the caption for a block, indented
+;; at the correct level
+
+(defun org-leanpub-markua--block-headline (headline level block)
+  "Return HEADLINE formatted at the correct LEVEL for BLOCK.
+
+LEVEL can have the following values:
+
+- A digit 1-9 forces the headline to that level.
+- \"same\" makes the headline the same level as the current.
+- \"below\" (or anything else, this is the default) makes the
+  headline one level lower than the current.
+
+A value is returned only if HEADLINE is not nil nor empty."
+  (when (> (length headline) 0)
+    (save-mark-and-excursion
+      (goto-char (org-element-property :begin block))
+      (let* ((cur-level (nth 1 (org-heading-components)))
+             (hdl-level
+              (cond
+               ((s-match "^[1-9]$" level) (string-to-number level))
+               ((s-equals? level "same") cur-level)
+               (t (+ 1 cur-level)))))
+        (format "%s %s\n" (s-repeat hdl-level "#") headline)))))
+
+;; Internal function to get the user-defined blocks from #+MARKUA_BLOCK lines.
+
+(defun org-leanpub-markua--user-defined-blocks (info)
+  "Return user-defined blocks from #+MARKUA_BLOCK lines in INFO.
+
+Format returned is the same as `org-leanpub-markua--block-definitions'."
+  (let ((markua-blocks (plist-get info :markua-block)))
+    (when markua-blocks
+      (mapcar (lambda (line)
+                (cl-destructuring-bind (block args) (s-split-up-to " " line 1)
+                  (list block "blurb"
+                        (org-babel-parse-header-arguments (s-trim args)))))
+              (s-lines markua-blocks)))))
+
+;;; Format special blocks: example, tip, note, etc.
+
 (defun org-leanpub-markua-special-block (special-block contents info)
   "Transcode a SPECIAL-BLOCK element from Org to Markua.
 CONTENTS is the contents of the block. INFO is a plist used as a
@@ -486,7 +531,7 @@ types according to the documentation at
 https://leanpub.com/markua/read#leanpub-auto-asides-a-or-aside
 
 The supported block types and their conversions are defined in
-`org-leanpub-markua--block-mapping'.
+`org-leanpub-markua--block-definitions'.
 
     Example:            Gets exported as:
 
@@ -524,13 +569,13 @@ same as {quiz} environments."
          (lp-attrs (org-leanpub-markua--attr_leanpub-attrs special-block))
          (export-type (or (alist-get :export-type lp-attrs)
                           (plist-get info :markua-export-type)))
-         (user-defined-blocks
-          (mapcar (lambda (line)
-                    (cl-destructuring-bind (block args) (s-split-up-to " " line 1)
-                      (list block "blurb"
-                            (org-babel-parse-header-arguments (s-trim args)))))
-                  (s-lines (plist-get info :markua-block))))
-         (all-blocks (append user-defined-blocks org-leanpub-markua--block-mapping)))
+         ;; Force convert caption-level to string, since it may come as either a
+         ;; string or a number depending on how it is specified
+         (caption-level (format "%s"
+                                (or (alist-get :caption-level lp-attrs)
+                                    (plist-get info :markua-block-caption-level))))
+         (block-defs (append (org-leanpub-markua--user-defined-blocks info)
+                             org-leanpub-markua--block-definitions)))
     (if (or (string= type "quiz")
             (and (string= type "exercise")
                  (string= export-type "course")))
@@ -538,14 +583,14 @@ same as {quiz} environments."
                                              (org-element-property :contents-end special-block))))
           (concat
            (org-leanpub-markua--attribute-line special-block info nil nil nil type)
-           (when (> (length caption) 0) (format "### %s\n" caption))
+           (org-leanpub-markua--block-headline caption caption-level special-block)
            (org-leanpub-markua--chomp-end block-value)
            (format "\n{/%s}\n" type)))
       (cl-destructuring-bind (markua-block &optional markua-attributes)
-          (alist-get type all-blocks nil nil #'equal)
+          (alist-get type block-defs nil nil #'equal)
         (concat
          (org-leanpub-markua--attribute-line special-block info markua-attributes nil nil markua-block)
-         (when (> (length caption) 0) (format "### %s\n" caption))
+         (org-leanpub-markua--block-headline caption caption-level special-block)
          (org-leanpub-markua--chomp-end (org-remove-indentation contents))
          (format "\n{/%s}\n" markua-block))))))
 

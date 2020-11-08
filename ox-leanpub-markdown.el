@@ -26,7 +26,10 @@
 ;; Export Org files in Leanpub Flavored Markdown (LFM) (see
 ;; `https://leanpub.com/lfm/read'), the original markup format for Leanpub
 ;; books.
-
+;;
+;; NOTE: You should not use this exporter anymore - it no longer supports all
+;; the features of ox-leanpub-markua.el. Use Markua instead.
+;;
 ;; See full documentation in the README.org file or at
 ;; `https://github.com/zzamboni/ox-leanpub'.
 

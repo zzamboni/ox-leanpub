@@ -181,7 +181,7 @@ If a heading has the =nobook= tag, the [[https://leanpub.com/markua/read#conditi
 Both LFM and Leanpub support specifying attributes for different elements using /attribute lines/. Both =ox-leanpub-markua= and =ox-leanpub-markdown= support specifying attributes as follows:
 
 - An element's =#+NAME=, =ID= or =CUSTOM_ID=, if specified, are used for the =id= attribute.
-- An element's =#+CAPTION=, if specified, is used for the =caption= attribute in Markua and the =title= attribute in LFM.
+- An element's =#+CAPTION=, if specified, is used for the =caption= attribute in Markua and the =title= attribute in LFM (see [[#block-captions][Block Captions]] for details of how captions are produced in block elements).
 - Other attributes can be specified in an =#+ATTR_LEANPUB= line before the corresponding element. The syntax is the same as for Org header arguments. These are merged with the previous one if specified. Attributes specified in =#+ATTR_LEANPUB= override those specified through other mechanisms.
 
 Example:
@@ -265,6 +265,17 @@ You can also define completely new block types:
 Leanpub block!
 ,#+end_leanpub
 #+end_src
+
+*** Block captions
+:PROPERTIES:
+:CUSTOM_ID: block-captions
+:END:
+
+If a =#+CAPTION= is specified for a block, it is exported as a headline at the top of the block. By default, the level of the headline is one below the current level (e.g. if the block is under a level-2 headline, its caption will be produced as a level-3 headline). You can configure this for the whole document by setting the =#+MARKUA_BLOCK_CAPTION_LEVEL= option, or for individual blocks by specifying the =:caption-level= option in the =#+ATTR_LEANPUB= line. Valid values for this option are:
+
+- =same=: the caption will be produced as a same-level headline;
+- A number 1-9: the caption will be produced as a headline of the specified level;
+- =below= (or anything else): default behavior, caption will be produced at one level below the current one.
 
 ** Exporting books and courses
 
