@@ -4,7 +4,7 @@
 
 [[https://melpa.org/#/ox-leanpub][file:https://melpa.org/packages/ox-leanpub-badge.svg]]
 
-Org-mode export backends to produce books and courses in the correct structure and format for publication with [[https://leanpub.com/][Leanpub]]. =ox-leanpub= allows you to write your material entirely in Org mode and manages the production of the files and directories needed for Leanpub to render your book. I use this package to publish [[https://leanpub.com/u/zzamboni][my books]].
+[[https://orgmode.org/][Org-mode]] export backends to publich books and courses with [[https://leanpub.com/][Leanpub]]. =ox-leanpub= allows you to write your material entirely in Org mode, and manages the production of the files and directories needed for Leanpub to render your book. I use this package to publish [[https://leanpub.com/u/zzamboni][my books]].
 
 This package contains three libraries:
 
