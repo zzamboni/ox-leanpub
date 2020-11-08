@@ -1,10 +1,10 @@
-#+title: ox-leanpub: Leanpub book exporter for Org-mode
+#+title: ox-leanpub: Leanpub book exporter for Org mode
 #+author: Diego Zamboni
 #+email: diego@zzamboni.org
 
 [[https://melpa.org/#/ox-leanpub][file:https://melpa.org/packages/ox-leanpub-badge.svg]]
 
-[[https://orgmode.org/][Org-mode]] export backends to publich books and courses with [[https://leanpub.com/][Leanpub]]. =ox-leanpub= allows you to write your material entirely in Org mode, and manages the production of the files and directories needed for Leanpub to render your book. I use this package to publish [[https://leanpub.com/u/zzamboni][my books]].
+[[https://orgmode.org/][Org Mode]] export backends to publich books and courses with [[https://leanpub.com/][Leanpub]]. =ox-leanpub= allows you to write your material entirely in Org mode, and manages the production of the files and directories needed for Leanpub to render your book. I use this package to publish [[https://leanpub.com/u/zzamboni][my books]].
 
 This package contains three libraries:
 
@@ -16,7 +16,7 @@ This package contains three libraries:
 
 If you have any feedback or bug reports, please open an issue at https://gitlab.com/zzamboni/ox-leanpub/-/issues.
 
-If you want to see a real-world example of how to use it, you can find at https://github.com/zzamboni/emacs-org-leanpub the source of my book [[https://leanpub.com/emacs-org-leanpub][Publishing with Emacs, Org-mode and Leanpub]].
+If you want to see a real-world example of how to use it, you can find at https://github.com/zzamboni/emacs-org-leanpub the source of my book [[https://leanpub.com/emacs-org-leanpub][Publishing with Emacs, Org mode and Leanpub]].
 
 * Table of Contents :toc:noexport:
 - [[#installation][Installation]]
@@ -123,7 +123,7 @@ The "buffer" and "file" options export the whole file to the corresponding forma
 The "Book" options do whole-book export in the structure required by Leanpub:
 - "Book: Whole book" exports the whole book as one-file-per-chapter;
 - "Book: Subset" exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
-  + The subset export can be temporarily restricted to the current chapter (regardless of the =#+LEANPUB_BOOK_WRITE_SUBSET= setting, see below) by pressing =C-s= in the Org-mode Export screen to set "Export scope" to "Buffer".
+  + The subset export can be temporarily restricted to the current chapter (regardless of the =#+LEANPUB_BOOK_WRITE_SUBSET= setting, see below) by pressing =C-s= in the Org Mode Export screen to set "Export scope" to "Buffer".
 
 The first time you do a Book export, the following directory and symlink structure will be created:
 
@@ -346,7 +346,7 @@ The modules provide reasonable defaults, but you can configure some parameters b
 
 * Check out my books!
 
-If you find this package useful, consider supporting me by purchasing my book [[https://leanpub.com/emacs-org-leanpub][Publishing with Emacs, Org-mode and Leanpub]], or any of my other [[https://leanpub.com/u/zzamboni][books at Leanpub]]!
+If you find this package useful, consider supporting me by purchasing my book [[https://leanpub.com/emacs-org-leanpub][Publishing with Emacs, Org Mode and Leanpub]], or any of my other [[https://leanpub.com/u/zzamboni][books at Leanpub]]!
 
 * Disclaimer
 
