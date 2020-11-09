@@ -50,7 +50,8 @@
             (lambda (a s v b)
               (if a (org-leanpub-markua-export-to-markua t s v)
                 (org-open-file (org-leanpub-markua-export-to-markua nil s v)))))))
-  :translate-alist '((fixed-width        . org-leanpub-markua-fixed-width-block)
+  :translate-alist '((center-block       . org-leanpub-markua-center-block)
+                     (fixed-width        . org-leanpub-markua-fixed-width-block)
                      (example-block      . org-leanpub-markua-example-block)
                      (special-block      . org-leanpub-markua-special-block)
                      (src-block          . org-leanpub-markua-src-block)
@@ -519,6 +520,53 @@ Format returned is the same as `org-leanpub-markua--block-definitions'."
                         (org-babel-parse-header-arguments (s-trim args)))))
               (s-lines markua-blocks)))))
 
+(defun org-leanpub-markua--emit-block (type block contents info)
+  "Produce Markua BLOCK of given TYPE.
+
+CONTENTS is the body of the block, INFO is used to exchange
+information. All relevant attributes, caption, etc. are generated
+as well.
+
+This is an internal function, should not be called directly."
+  (let* ((caption (org-export-data (org-export-get-caption block) info))
+         (lp-attrs (org-leanpub-markua--attr_leanpub-attrs block))
+         (export-type (or (alist-get :export-type lp-attrs)
+                          (plist-get info :markua-export-type)))
+         ;; Force convert caption-level to string, since it may come as either a
+         ;; string or a number depending on how it is specified
+         (caption-level (format "%s"
+                                (or (alist-get :caption-level lp-attrs)
+                                    (plist-get info :markua-block-caption-level))))
+         (block-defs (append (org-leanpub-markua--user-defined-blocks info)
+                             org-leanpub-markua--block-definitions)))
+    (if (or (string= type "quiz")
+            (and (string= type "exercise")
+                 (string= export-type "course")))
+        (let ((block-value (buffer-substring (org-element-property :contents-begin block)
+                                             (org-element-property :contents-end block))))
+          (concat
+           (org-leanpub-markua--attribute-line block info nil nil nil type)
+           (org-leanpub-markua--block-headline caption caption-level block)
+           (org-leanpub-markua--chomp-end block-value)
+           (format "\n{/%s}\n" type)))
+      (when (not (assoc type block-defs))
+          (lwarn '(ox-leanpub-markua) :warning "Unknown block type '%s', rendering as 'blurb'." type))
+      (cl-destructuring-bind (markua-block &optional markua-attributes)
+          (alist-get type block-defs (alist-get "blurb" block-defs nil nil #'equal) nil #'equal)
+        (concat
+         (org-leanpub-markua--attribute-line block info markua-attributes nil nil markua-block)
+         (org-leanpub-markua--block-headline caption caption-level block)
+         (org-leanpub-markua--chomp-end (org-remove-indentation contents))
+         (format "\n{/%s}\n" markua-block))))))
+
+;;;; Center Block
+
+(defun org-leanpub-markua-center-block (center-block contents info)
+  "Transcode a CENTER-BLOCK element from Org to Markua.
+CONTENTS holds the contents of the block.  INFO is a plist
+holding contextual information."
+  (org-leanpub-markua--emit-block "center" center-block contents info))
+
 ;;; Format special blocks: example, tip, note, etc.
 
 (defun org-leanpub-markua-special-block (special-block contents info)
@@ -564,35 +612,8 @@ value (`book'), example blocks are exported using the blurb
 notation `X>'. If set to `course', then example blocks are
 exported as {example} environments, and otherwise handled the
 same as {quiz} environments."
-  (let* ((type (org-element-property :type special-block))
-         (caption (org-export-data (org-export-get-caption special-block) info))
-         (lp-attrs (org-leanpub-markua--attr_leanpub-attrs special-block))
-         (export-type (or (alist-get :export-type lp-attrs)
-                          (plist-get info :markua-export-type)))
-         ;; Force convert caption-level to string, since it may come as either a
-         ;; string or a number depending on how it is specified
-         (caption-level (format "%s"
-                                (or (alist-get :caption-level lp-attrs)
-                                    (plist-get info :markua-block-caption-level))))
-         (block-defs (append (org-leanpub-markua--user-defined-blocks info)
-                             org-leanpub-markua--block-definitions)))
-    (if (or (string= type "quiz")
-            (and (string= type "exercise")
-                 (string= export-type "course")))
-        (let ((block-value (buffer-substring (org-element-property :contents-begin special-block)
-                                             (org-element-property :contents-end special-block))))
-          (concat
-           (org-leanpub-markua--attribute-line special-block info nil nil nil type)
-           (org-leanpub-markua--block-headline caption caption-level special-block)
-           (org-leanpub-markua--chomp-end block-value)
-           (format "\n{/%s}\n" type)))
-      (cl-destructuring-bind (markua-block &optional markua-attributes)
-          (alist-get type block-defs nil nil #'equal)
-        (concat
-         (org-leanpub-markua--attribute-line special-block info markua-attributes nil nil markua-block)
-         (org-leanpub-markua--block-headline caption caption-level special-block)
-         (org-leanpub-markua--chomp-end (org-remove-indentation contents))
-         (format "\n{/%s}\n" markua-block))))))
+  (let* ((type (org-element-property :type special-block)))
+    (org-leanpub-markua--emit-block type special-block contents info)))
 
 (defun org-leanpub-markua-link (link contents info)
   "Transcode a LINK object into Markua format.
