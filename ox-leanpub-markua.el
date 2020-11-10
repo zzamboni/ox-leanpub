@@ -503,7 +503,7 @@ A value is returned only if HEADLINE is not nil nor empty."
               (cond
                ((s-match "^[1-9]$" level) (string-to-number level))
                ((s-equals? level "same") cur-level)
-               (t (+ 1 cur-level)))))
+               (t (1+ cur-level)))))
         (format "%s %s\n" (s-repeat hdl-level "#") headline)))))
 
 ;; Internal function to get the user-defined blocks from #+MARKUA_BLOCK lines.
