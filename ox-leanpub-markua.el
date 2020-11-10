@@ -95,7 +95,7 @@
     ("error"       "blurb" ((:class . "error")))
     ("exercise"    "blurb" ((:class . "exercise")))
     ("information" "blurb" ((:class . "information")))
-    ("note"        "blurb" ((:class . "information")))
+    ("note"        "blurb" ((:class . "information") (:icon  . "sticky-note")))
     ("question"    "blurb" ((:class . "question")))
     ("tip"         "blurb" ((:class . "tip")))
     ("warning"     "blurb" ((:class . "warning"))))
