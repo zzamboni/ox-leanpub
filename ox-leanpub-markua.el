@@ -88,17 +88,21 @@
 
 ;;; Mapping from org blocks to Markua blocks.
 (defvar org-leanpub-markua--block-definitions
-  '(("aside"       "aside" nil)
-    ("blurb"       "blurb" nil)
-    ("center"      "blurb" ((:class . "center")))
-    ("discussion"  "blurb" ((:class . "discussion")))
-    ("error"       "blurb" ((:class . "error")))
-    ("exercise"    "blurb" ((:class . "exercise")))
-    ("information" "blurb" ((:class . "information")))
-    ("note"        "blurb" ((:class . "information") (:icon  . "sticky-note")))
-    ("question"    "blurb" ((:class . "question")))
-    ("tip"         "blurb" ((:class . "tip")))
-    ("warning"     "blurb" ((:class . "warning"))))
+  '(;; Default Org blocks and their translations
+    ("note"        "blurb"      ((:class . "information")))
+    ("quote"       "blockquote" nil)
+    ;; Custom Org blocks corresponding to Markua blocks
+    ("aside"       "aside"      nil)
+    ("blockquote"  "blockquote" nil)
+    ("blurb"       "blurb"      nil)
+    ("center"      "blurb"      ((:class . "center")))
+    ("discussion"  "blurb"      ((:class . "discussion")))
+    ("error"       "blurb"      ((:class . "error")))
+    ("exercise"    "blurb"      ((:class . "exercise")))
+    ("information" "blurb"      ((:class . "information")))
+    ("question"    "blurb"      ((:class . "question")))
+    ("tip"         "blurb"      ((:class . "tip")))
+    ("warning"     "blurb"      ((:class . "warning"))))
   "Mapping from org block types to Markua aside and blurb blocks.
 The default value corresponds to the block types as documentated
 at https://leanpub.com/markua/read#leanpub-auto-asides-a-or-aside
@@ -391,10 +395,7 @@ the plist used as a communication channel."
   "Transcode QUOTE-BLOCK element into Markua format.
 CONTENTS is the quote-block contents.  INFO is a plist used as
 a communication channel."
-  (concat
-   (org-leanpub-markua--attribute-line quote-block info)
-   (format "{blockquote}\n%s\n{/blockquote}\n"
-           (org-leanpub-markua--chomp-end (org-remove-indentation contents)))))
+  (org-leanpub-markua--emit-block "quote" quote-block contents info))
 
 ;;; Internal functions to get header arguments from a src block
 

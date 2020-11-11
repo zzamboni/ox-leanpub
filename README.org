@@ -213,8 +213,8 @@ And in LFM as:
 
 | Block type              | Gets exported as              |
 |-------------------------+-------------------------------|
-| =#+begin/end_quote=       | ={blockquote}=                  |
 | =#+begin/end_aside=       | ={aside}=                       |
+| =#+begin/end_blockquote=  | ={blockquote}=                  |
 | =#+begin/end_blurb=       | ={blurb}=                       |
 | =#+begin/end_center=      | ={blurb, class: "center"}=      |
 | =#+begin/end_discussion=  | ={blurb, class: "discussion"}=  |
@@ -223,6 +223,7 @@ And in LFM as:
 | =#+begin/end_information= | ={blurb, class: "information"}= |
 | =#+begin/end_note=        | ={blurb, class: "information"}= |
 | =#+begin/end_question=    | ={blurb, class: "question"}=    |
+| =#+begin/end_quote=       | ={blockquote}=                  |
 | =#+begin/end_tip=         | ={blurb, class: "tip"}=         |
 | =#+begin/end_warning=     | ={blurb, class: "warning"}=     |
 
