@@ -87,7 +87,7 @@
 ;;; Variable definitions
 
 ;;; Mapping from org blocks to Markua blocks.
-(defvar org-leanpub-markua--block-definitions
+(defvar org-leanpub-markua--block-defs
   '(;; Default Org blocks and their translations
     ("note"        "blurb"      ((:class . "information")))
     ("quote"       "blockquote" nil)
@@ -126,7 +126,7 @@ whether you are exporting a book or a course, see the
 documentation for `org-leanpub-markua-special-block' for
 details.")
 
-(defvar org-leanpub-markua--exclude-attributes
+(defvar org-leanpub-markua--exclude-attrs
   '(:export-type :caption-level)
   "List of ATTR_LEANPUB attributes that are omitted in the Markua output.
 
@@ -145,7 +145,40 @@ Markua attribute lines.")
       (lwarn '(ox-leanpub-markua) :warning "Old-style ATTR_LEANPUB format '%s' no longer supported. Please use format ':attr val ...'" attr-leanpub-str))
     (org-babel-parse-header-arguments attr-leanpub-str)))
 
-(defun org-leanpub-markua--attribute-line (elem info &optional other-attrs nonewline exclude-attrs env-name)
+(defun org-leanpub-markua--attr-str (attrs &optional block-name exclude-attrs)
+  "Internal function to generate a Markua attribute string.
+
+ATTRS is an alist containing the attributes to include.
+Optionally, BLOCK-NAME can contain the name of a Markua block, and
+in this case the line generates works as the opening line for the
+given block. EXCLUDE-ATTRS can be a list of attributes to exclude
+from the result. If omitted, it defaults to
+`org-leanpub-markua--exclude-attrs'.
+
+If no attributes nor block name are specified, nil is returned,
+otherwise the return value has the following structure:
+
+  {[BLOCK-NAME,] :attr1 val1 [:attr2 val2 ..]}"
+  (let* ((exclude-attrs (or exclude-attrs org-leanpub-markua--exclude-attrs))
+         (attribute-str
+          (mapconcat
+           #'identity
+           (delq nil
+                 (append
+                  (list block-name)
+                  (mapcar (lambda (elem)
+                            (cl-destructuring-bind (key . val) elem
+                              (when (and (not (member key exclude-attrs))
+                                         (or (numberp val) (> (length val) 0)))
+                                (format "%s: \"%s\""
+                                        (substring (symbol-name key) 1)
+                                        val))))
+                          (cl-remove-duplicates attrs :key #'car :from-end t))))
+           ", ")))
+    (when (> (length attribute-str) 0)
+      (format "{%s}" attribute-str))))
+
+(defun org-leanpub-markua--attr-line (elem info &optional other-attrs nonewline exclude-attrs block-name)
   "Generate a Leanpub attribute or environment line.
 Collect #+NAME, #+CAPTION, and any attributes specified as :key
 value in the #+ATTR_LEANPUB line for ELEM, and put them all
@@ -159,7 +192,7 @@ given, is an alist holding additional attributes to include.
 NONEWLINE, supresses a trailing newline in the produced attribute
 line. EXCLUDE-ATTRS can be used to specify a list of attributes
 to exclude in the output, its default value is
-`org-leanpub-markua--exclude-attributes'. ENV-NAME can be
+`org-leanpub-markua--exclude-attrs'. BLOCK-NAME can be
 specified to format the line as an environment name followed by
 the attributes, e.g. for a quiz or exercise environment in
 Markua."
@@ -172,27 +205,9 @@ Markua."
          ;; Parse the attributes from #+ATTR_LEANPUB and concatenate with any
          ;; other arguments given, and with the initial list constructed above.
          ;; Earlier elements of the list override later ones.
-         (lpattr (delq nil (append (org-leanpub-markua--attr_leanpub-attrs elem) other-attrs init)))
-         ;;; Use the default value for exclude-attrs if not specified
-         (exclude-attrs (or exclude-attrs org-leanpub-markua--exclude-attributes))
-         ;; Build the attribute line to print
-         (attribute-line
-          (mapconcat #'identity
-                     (delq nil
-                           (append
-                            (list env-name)
-                            (mapcar (lambda (elem)
-                                      (cl-destructuring-bind (key . val) elem
-                                        (when (and (not (member key exclude-attrs))
-                                                   (or (numberp val) (> (length val) 0)))
-                                          (format "%s: \"%s\""
-                                                  (substring (symbol-name key) 1)
-                                                  val))))
-                                    (cl-remove-duplicates lpattr :key #'car :from-end t))))
-                     ", "))
-         ;; Compute the final output string
-         (output (when (> (length attribute-line) 0)
-                   (format "{%s}" attribute-line))))
+         (attrs (delq nil (append (org-leanpub-markua--attr_leanpub-attrs elem) other-attrs init)))
+         ;; Compute the attribute line to print
+         (output (org-leanpub-markua--attr-str attrs block-name exclude-attrs)))
     (when (> (length output) 0)
       (concat
        output
@@ -210,7 +225,7 @@ Markua."
   "Use ox-gfm to transcode TABLE element into Github Flavored Markdown table.
 CONTENTS is the contents of the table.  INFO is a plist holding
 contextual information.  We prepend the Leanpub attribute line if needed."
-  (concat (org-leanpub-markua--attribute-line table info)
+  (concat (org-leanpub-markua--attr-line table info)
           (org-gfm-table table contents info)))
 
 ;;; LaTeX fragments and environments
@@ -289,7 +304,7 @@ item contents.  INFO is a plist used as a communication channel."
                                                   '(:sample . "true")
                                                 (when (string= elem "nobook")
                                                   '(:book . "false")))) tags))))
-    (concat (org-leanpub-markua--attribute-line headline info other-attrs)
+    (concat (org-leanpub-markua--attr-line headline info other-attrs)
             (string-trim-left (org-leanpub-markua-headline-without-anchor headline contents info)))))
 
 (defun org-leanpub-markua-item (item contents info)
@@ -384,7 +399,7 @@ contextual information."
   "Transcode a PARAGRAPH element from Org to Markua.
 CONTENTS is the contents of the paragraph, as a string.  INFO is
 the plist used as a communication channel."
-  (concat (org-leanpub-markua--attribute-line paragraph info)
+  (concat (org-leanpub-markua--attr-line paragraph info)
           (replace-regexp-in-string "{{markua:linebreak}}" "\n"
                                     (replace-regexp-in-string "\n" " " contents)
                                     nil 'literal)))
@@ -458,7 +473,7 @@ INFO is a plist used as a communication channel."
                             (cons :caption built-caption))))
              (block-value (org-element-property :value src-block)))
         (concat
-         (org-leanpub-markua--attribute-line src-block info attrs)
+         (org-leanpub-markua--attr-line src-block info attrs)
          "```\n"
          (org-remove-indentation block-value)
          (unless (string-suffix-p "\n" block-value) "\n")
@@ -512,7 +527,7 @@ A value is returned only if HEADLINE is not nil nor empty."
 (defun org-leanpub-markua--user-defined-blocks (info)
   "Return user-defined blocks from #+MARKUA_BLOCK lines in INFO.
 
-Format returned is the same as `org-leanpub-markua--block-definitions'."
+Format returned is the same as `org-leanpub-markua--block-defs'."
   (let ((markua-blocks (plist-get info :markua-block)))
     (when markua-blocks
       (mapcar (lambda (line)
@@ -539,14 +554,14 @@ This is an internal function, should not be called directly."
                                 (or (alist-get :caption-level lp-attrs)
                                     (plist-get info :markua-block-caption-level))))
          (block-defs (append (org-leanpub-markua--user-defined-blocks info)
-                             org-leanpub-markua--block-definitions)))
+                             org-leanpub-markua--block-defs)))
     (if (or (string= type "quiz")
             (and (string= type "exercise")
                  (string= export-type "course")))
         (let ((block-value (buffer-substring (org-element-property :contents-begin block)
                                              (org-element-property :contents-end block))))
           (concat
-           (org-leanpub-markua--attribute-line block info nil nil nil type)
+           (org-leanpub-markua--attr-line block info nil nil nil type)
            (org-leanpub-markua--block-headline caption caption-level block)
            (org-leanpub-markua--chomp-end block-value)
            (format "\n{/%s}\n" type)))
@@ -555,7 +570,7 @@ This is an internal function, should not be called directly."
       (cl-destructuring-bind (markua-block &optional markua-attributes)
           (alist-get type block-defs (alist-get "blurb" block-defs nil nil #'equal) nil #'equal)
         (concat
-         (org-leanpub-markua--attribute-line block info markua-attributes nil nil markua-block)
+         (org-leanpub-markua--attr-line block info markua-attributes nil nil markua-block)
          (org-leanpub-markua--block-headline caption caption-level block)
          (org-leanpub-markua--chomp-end (org-remove-indentation contents))
          (format "\n{/%s}\n" markua-block))))))
@@ -580,7 +595,7 @@ types according to the documentation at
 https://leanpub.com/markua/read#leanpub-auto-asides-a-or-aside
 
 The supported block types and their conversions are defined in
-`org-leanpub-markua--block-definitions'.
+`org-leanpub-markua--block-defs'.
 
     Example:            Gets exported as:
 
