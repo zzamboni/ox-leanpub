@@ -66,8 +66,7 @@
                      (paragraph          . org-leanpub-markdown-paragraph)
                      (table              . org-leanpub-markdown-table)
                      (table-cell         . org-leanpub-markdown-table-cell)
-                     (table-row          . org-leanpub-markdown-table-row)
-                     (export-block       . org-leanpub-markdown-ignore)))
+                     (table-row          . org-leanpub-markdown-table-row)))
 
 ;;; Utility functions
 

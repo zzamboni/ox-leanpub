@@ -70,8 +70,8 @@
                      (table-cell         . org-gfm-table-cell)
                      (table-row          . org-gfm-table-row)
                      (table              . org-leanpub-markua-table)
-                     (export-block       . org-leanpub-markua-ignore)
-                     (export-snippet     . org-leanpub-markua-ignore)
+                     (export-block       . org-leanpub-markua-export-block)
+                     (export-snippet     . org-leanpub-markua-export-snippet)
                      (superscript        . org-leanpub-markua-superscript)
                      (subscript          . org-leanpub-markua-subscript))
   :options-alist
@@ -372,8 +372,8 @@ INFO is a plist holding contextual information."
                  label
                (org-export-get-footnote-number footnote info))))))
 
-(defun org-leanpub-markua-ignore (_src-block _contents _info)
-  "Return an empty string for `SRC-BLOCK' elements which are ignored.
+(defun org-leanpub-markua-ignore (_ignored-block _contents _info)
+  "Return an empty string for IGNORED-BLOCK elements which are ignored.
 CONTENTS and INFO are also ignored."
   "")
 
@@ -487,6 +487,23 @@ INFO is a plist used as a communication channel."
 CONTENTS holds the contents of the block. INFO is a plist used as
 a communication channel."
   (org-leanpub-markua-src-block src-block contents info))
+
+;;;; Export Snippet
+
+(defun org-leanpub-markua-export-snippet (export-snippet _contents _info)
+  "Transcode a EXPORT-SNIPPET object from Org to Markua.
+CONTENTS is nil.  INFO is a plist holding contextual
+information."
+  (when (eq (org-export-snippet-backend export-snippet) 'leanpub-markua)
+    (org-element-property :value export-snippet)))
+
+;;;; Export Block
+
+(defun org-leanpub-markua-export-block (export-block _contents _info)
+  "Transcode a EXPORT-BLOCK element from Org to Markua.
+CONTENTS is nil.  INFO is a plist holding contextual information."
+  (when (string= (org-element-property :type export-block) "MARKUA")
+    (org-remove-indentation (org-element-property :value export-block))))
 
 ;;; > ~~~~~~~~
 ;;; > 123.0
