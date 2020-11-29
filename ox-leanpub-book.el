@@ -75,8 +75,9 @@ correct value in your org file.")
           (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export-markdown s v 'sample-file 'only-subset)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
-      (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
-      (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil       t))))
+      (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none" t)
+      (:leanpub-book-id-as-filename      "LEANPUB_BOOK_ID_AS_FILENAME"      nil nil    t)
+      (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil    t))))
 
 (defun org-leanpub-book-setup-menu-markua ()
   "Set up the Multifile export menu entries within the Leanpub Markua menu."
@@ -89,8 +90,9 @@ correct value in your org file.")
           (?s "Book: Subset"          (lambda (_a s v _b) (org-leanpub-book-export-markua s v nil 'only-subset)))))
     :options-alist
     '((:leanpub-book-output-dir          "LEANPUB_BOOK_OUTPUT_DIR"          nil org-leanpub-book-manuscript-dir t)
-      (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none"       t)
-      (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil       t))))
+      (:leanpub-book-write-subset        "LEANPUB_BOOK_WRITE_SUBSET"        nil "none" t)
+      (:leanpub-book-id-as-filename      "LEANPUB_BOOK_ID_AS_FILENAME"      nil nil    t)
+      (:leanpub-book-recompute-filenames "LEANPUB_BOOK_RECOMPUTE_FILENAMES" nil nil    t))))
 
 ;;; Utility functions
 
@@ -137,14 +139,16 @@ DO-SAMPLE-FILE, ONLY-SUBSET and SUBTREEP are as passed to
          (ignore-stored-filenames (plist-get info :leanpub-book-recompute-filenames))
          (subset-mode (or (and subtreep 'current) (intern (plist-get info :leanpub-book-write-subset))))
          (do-subset (and subset-mode (not (eq subset-mode 'none))))
+         (use-id-for-fname (plist-get info :leanpub-book-id-as-filename))
          ;; Get all the information about the current subtree and heading
-         (id (or (org-element-property :name      current-subtree)
-                 (org-element-property :ID        current-subtree)
-                 (org-element-property :CUSTOM_ID current-subtree)))
+         (id-fname (when use-id-for-fname
+                     (or (org-element-property :name      current-subtree)
+                         (org-element-property :CUSTOM_ID current-subtree)
+                         (org-element-property :ID        current-subtree))))
          (title (or (nth 4 (org-heading-components)) ""))
          (tags (org-get-tags))
          ;; Compute or get (from EXPORT_FILE_NAME) the output filename
-         (basename (concat (replace-regexp-in-string "[^[:alnum:]]" "-" (downcase (or id title)))
+         (basename (concat (replace-regexp-in-string "[^[:alnum:]]" "-" (downcase (or id-fname title)))
                            export-extension))
          (computed-filename (org-leanpub-book--outfile outdir basename))
          (stored-filename (org-entry-get (point) "EXPORT_FILE_NAME"))
