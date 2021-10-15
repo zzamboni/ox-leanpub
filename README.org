@@ -31,6 +31,8 @@ If you want to see a real-world example of how to use it, you can find at https:
   - [[#code-block-captions][Code block captions]]
   - [[#calling-from-emacs-lisp][Calling from Emacs LISP]]
   - [[#configuration][Configuration]]
+- [[#faq][FAQ]]
+  - [[#headlines-below-a-certain-level-are-not-exported-correctly][Headlines below a certain level are not exported correctly]]
 - [[#credits][Credits]]
 - [[#check-out-my-books][Check out my books!]]
 - [[#disclaimer][Disclaimer]]
@@ -339,6 +341,18 @@ The modules provide reasonable defaults, but you can configure some parameters b
 | =#+MARKUA_TANGLE_CAPTION=            | nil              | (only for Markua export) If set (regardless of its value), use the value of the =:tangle= header argument for the caption of source code blocks.                                                                                                                                            |
 | =#+MARKUA_TANGLE_CAPTION_FMT=        | "[%s]"           | Format to use for captions generated from the =:tangle= attribute. The string =%s= is replaced by the =:tangle= value.                                                                                                                                                                          |
 | =#+MARKUA_TANGLE_NOWEB_CAPTION_FMT=  | "[%1$s] «%2$s»≡" | Format to use when both =:noweb-ref= and =:tangle= are used to generate the caption. The string =%1$s= is replaced by the value of =:tangle=, and =%2$s= by the value of =:noweb-ref=.                                                                                                                |
+
+* FAQ
+
+** Headlines below a certain level are not exported correctly
+
+This is controlled by the Org-mode [=H= export option](https://orgmode.org/manual/Export-Settings.html#index-org_002dexport_002dheadline_002dlevels). Its default value is 3, which causes all lower-level headlines to be exported as lists instead. To fix this, you have to increase the value of this option.
+
+This can be done in each file with a line like this:
+#+begin_src org
+,#+options: h:9
+#+end_src
+You can also change its default by setting the =org-export-headline-levels= variable.
 
 * Credits
 
