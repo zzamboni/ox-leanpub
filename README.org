@@ -346,7 +346,7 @@ The modules provide reasonable defaults, but you can configure some parameters b
 
 ** Headlines below a certain level are not exported correctly
 
-This is controlled by the Org-mode [=H= export option](https://orgmode.org/manual/Export-Settings.html#index-org_002dexport_002dheadline_002dlevels). Its default value is 3, which causes all lower-level headlines to be exported as lists instead. To fix this, you have to increase the value of this option.
+This is controlled by the Org-mode [[https://orgmode.org/manual/Export-Settings.html#index-org_002dexport_002dheadline_002dlevels]["H" export option]]. Its default value is 3, which causes all lower-level headlines to be exported as lists instead. To fix this, you have to increase the value of this option.
 
 This can be done in each file with a line like this:
 #+begin_src org
