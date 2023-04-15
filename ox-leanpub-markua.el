@@ -335,6 +335,10 @@ a communication channel."
         (value (org-element-property :value keyword)))
     (cond
      ((string= key "MARKUA") value)
+     ((string= key "INDEX") (format "{i:\"%s\"}"
+                                    (replace-regexp-in-string
+                                     "\\(see\\|seealso\\)=\"?\\(.+?\\)\"?$" "\\1{i:'\\2'}"
+                                     value)))
      (t ""))))
 
 (defun org-leanpub-markua-inner-template (contents info)
@@ -342,23 +346,26 @@ a communication channel."
 CONTENTS is the transcoded contents string.  INFO is a plist
 holding export options.  Required in order to add footnote
 definitions at the end."
-  (concat
-   contents
-   "\n\n"
-   (let ((definitions (org-export-collect-footnote-definitions
-                       info
-                       (plist-get info :parse-tree))))
-     ;; Looks like leanpub do not like : in labels.
-     (mapconcat (lambda (ref)
-                  (let ((id (format "[^%s]: " (replace-regexp-in-string
-                                               ":" "_"
-                                               (let ((label (cadr ref)))
-                                                 (if label
-                                                     label
-                                                   (car ref)))))))
-                    (let ((def (nth 2 ref)))
-                      (concat id (org-export-data def info)))))
-                definitions "\n\n"))))
+  (replace-regexp-in-string
+   ;; Remove blank lines after index entries
+   "\\({i:.+?}\\)\n\n" "\\1\n"
+   (concat
+    contents
+    "\n\n"
+    (let ((definitions (org-export-collect-footnote-definitions
+                        info
+                        (plist-get info :parse-tree))))
+      ;; Looks like leanpub do not like : in labels.
+      (mapconcat (lambda (ref)
+                   (let ((id (format "[^%s]: " (replace-regexp-in-string
+                                                ":" "_"
+                                                (let ((label (cadr ref)))
+                                                  (if label
+                                                      label
+                                                    (car ref)))))))
+                     (let ((def (nth 2 ref)))
+                       (concat id (org-export-data def info)))))
+                 definitions "\n\n")))))
 
 (defun org-leanpub-markua-footnote-reference (footnote _contents info)
   "Export a `FOOTNOTE'.
