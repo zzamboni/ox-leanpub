@@ -125,7 +125,7 @@ The "buffer" and "file" options export the whole file to the corresponding forma
 The "Book" options do whole-book export in the structure required by Leanpub:
 - "Book: Whole book" exports the whole book as one-file-per-chapter;
 - "Book: Subset" exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
-  + The subset export can be temporarily restricted to the current chapter (regardless of the =#+LEANPUB_BOOK_WRITE_SUBSET= setting, see below) by pressing =C-s= in the Org Mode Export screen to set "Export scope" to "Buffer".
+  + The subset export can be temporarily restricted to the current chapter (regardless of the =#+LEANPUB_BOOK_WRITE_SUBSET= setting, see below) by pressing =C-s= in the Org Mode Export screen to set "Export scope" to "Subtree".
 
 The first time you do a Book export, the following directory and symlink structure will be created:
 
@@ -312,7 +312,7 @@ echo "Hi"
 ,#+end_src
 #+end_src
 
-You can configure =ox-leanpub-markua= to automatically generate the caption using the =:tangle= or =:noweb-ref= attributes, if present, using the =#+MARKUA_TANGLE_CAPTION= and =#+MARKUA_NOWEB_REF_CAPTION= options. Either or both of them can be specified. The format of the generated captions can be configured, see [[#configuration][Configuration]] below for the details.
+You can configure =ox-leanpub-markua= to automatically generate the caption using the =:tangle= or =:noweb-ref= attributes, if present, using the =#+MARKUA_TANGLE_CAPTION= and =#+MARKUA_NOWEB_REF_CAPTION= options. Either or both of them can be specified. The format of the generated captions can be configured, see [[#configuration][Configuration]] below for the details. *Note:* generating captions based on =:tangle= or =:noweb-ref= only works if the =org-export-use-babel= variable is set to =nil=. This is due to a limitation in =org-export= (the code block headers are not visible to the exporter if this variable is =t=, since they are processed before).
 
 Even when these options are enabled, a manually specified =#+CAPTION= will always take precedence.
 
@@ -329,18 +329,18 @@ There are multiple endpoints which can be useful when calling from Emacs LISP, f
 
 The modules provide reasonable defaults, but you can configure some parameters by specifying keywords at the top of your Org file. The following are recognized:
 
-| *Keyword*                            | *Default value*    | *Description*                                                                                                                                                                                                                                                                               |
-| =#+LEANPUB_BOOK_ID_AS_FILENAME=      | =nil=              | If set (regardless of its value), use a heading's =NAME=, =CUSTOM_ID= or =ID= properties (if it has them) to construct the output filename, instead of always using the title.                                                                                                                  |
-| =#+LEANPUB_BOOK_OUTPUT_DIR=          | "manuscript"     | Subdirectory where the exported files will be created.                                                                                                                                                                                                                                    |
+| *Keyword*                            | *Default value*    | *Description*                                                                                                                       |
+| =#+LEANPUB_BOOK_ID_AS_FILENAME=      | =nil=              | If set (regardless of its value), use a heading's =NAME=, =CUSTOM_ID= or =ID= properties (if it has them) to construct the output filename, instead of always using the title. |
+| =#+LEANPUB_BOOK_OUTPUT_DIR=          | "manuscript"     | Subdirectory where the exported files will be created.                                                                            |
 | =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= | =nil=              | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title. Note that if a chapter title has changed since the last export, it will be exported to a new filename, but the old file will not be deleted, you need to do this manually. |
-| =#+LEANPUB_BOOK_WRITE_SUBSET=        | "none"           | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                                                |
-| =#+MARKUA_BLOCK=                     | =nil=              | Redefine or define a new block type. See [[#block-elements][Block Elements]] for the syntax details.                                                                                                                                                                                                           |
-| =#+MARKUA_EXPORT_TYPE=               | "book"           | (only for Markua export) Determines the type of export being done. Valid values are "book" and "course".                                                                                                                                                                                  |
-| =#+MARKUA_NOWEB_REF_CAPTION=         | =nil=              | (only for Markua export) If set (regardless of its value), use the value of the =:noweb-ref= header argument for the caption of source code blocks.                                                                                                                                         |
-| =#+MARKUA_NOWEB_REF_CAPTION_FMT=     | "«%s»≡"          | Format to use for captions generated from the =:noweb-ref= attribute. The string =%s= is replaced by the =:noweb-ref= value. The default value can be used (depending on the formatting of your book) to emulate the default output format produced by [[https://en.wikipedia.org/wiki/Noweb][noweb]].                                   |
-| =#+MARKUA_TANGLE_CAPTION=            | nil              | (only for Markua export) If set (regardless of its value), use the value of the =:tangle= header argument for the caption of source code blocks.                                                                                                                                            |
-| =#+MARKUA_TANGLE_CAPTION_FMT=        | "[%s]"           | Format to use for captions generated from the =:tangle= attribute. The string =%s= is replaced by the =:tangle= value.                                                                                                                                                                          |
-| =#+MARKUA_TANGLE_NOWEB_CAPTION_FMT=  | "[%1$s] «%2$s»≡" | Format to use when both =:noweb-ref= and =:tangle= are used to generate the caption. The string =%1$s= is replaced by the value of =:tangle=, and =%2$s= by the value of =:noweb-ref=.                                                                                                                |
+| =#+LEANPUB_BOOK_WRITE_SUBSET=        | "none"           | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                        |
+| =#+MARKUA_BLOCK=                     | =nil=              | Redefine or define a new block type. See [[#block-elements][Block Elements]] for the syntax details.                                                   |
+| =#+MARKUA_EXPORT_TYPE=               | "book"           | (only for Markua export) Determines the type of export being done. Valid values are "book" and "course".                          |
+| =#+MARKUA_NOWEB_REF_CAPTION=         | =nil=              | (only for Markua export) If set (regardless of its value), use the value of the =:noweb-ref= header argument for the caption of source code blocks. For this to work, the =org-export-use-babel= variable must be set to =nil=. |
+| =#+MARKUA_NOWEB_REF_CAPTION_FMT=   | "«%s»≡"          | Format to use for captions generated from the =:noweb-ref= attribute. The string =%s= is replaced by the =:noweb-ref= value. The default value can be used (depending on the formatting of your book) to emulate the default output format produced by [[https://en.wikipedia.org/wiki/Noweb][noweb]]. |
+| =#+MARKUA_TANGLE_CAPTION=            | nil              | (only for Markua export) If set (regardless of its value), use the value of the =:tangle= header argument for the caption of source code blocks. For this to work, the =org-export-use-babel= variable must be set to =nil=. |
+| =#+MARKUA_TANGLE_CAPTION_FMT=        | "[%s]"           | Format to use for captions generated from the =:tangle= attribute. The string =%s= is replaced by the =:tangle= value.                  |
+| =#+MARKUA_TANGLE_NOWEB_CAPTION_FMT=  | "[%1$s] «%2$s»≡" | Format to use when both =:noweb-ref= and =:tangle= are used to generate the caption. The string =%1$s= is replaced by the value of =:tangle=, and =%2$s= by the value of =:noweb-ref=. |
 
 * FAQ
 
