@@ -29,6 +29,7 @@ If you want to see a real-world example of how to use it, you can find at https:
   - [[#block-elements][Block elements]]
   - [[#exporting-books-and-courses][Exporting books and courses]]
   - [[#code-block-captions][Code block captions]]
+  - [[#index-entries][Index entries]]
   - [[#calling-from-emacs-lisp][Calling from Emacs LISP]]
   - [[#configuration][Configuration]]
 - [[#faq][FAQ]]
@@ -315,6 +316,22 @@ echo "Hi"
 You can configure =ox-leanpub-markua= to automatically generate the caption using the =:tangle= or =:noweb-ref= attributes, if present, using the =#+MARKUA_TANGLE_CAPTION= and =#+MARKUA_NOWEB_REF_CAPTION= options. Either or both of them can be specified. The format of the generated captions can be configured, see [[#configuration][Configuration]] below for the details. *Note:* generating captions based on =:tangle= or =:noweb-ref= only works if the =org-export-use-babel= variable is set to =nil=. This is due to a limitation in =org-export= (the code block headers are not visible to the exporter if this variable is =t=, since they are processed before).
 
 Even when these options are enabled, a manually specified =#+CAPTION= will always take precedence.
+
+** Index entries
+
+Leanpub supports producing indices [[https://community.leanpub.com/t/first-version-of-index-entry-support-is-live-only-for-markua-0-30-books/3859][for books using Markua 0.30]], so =ox-leanpub-markua= exports [[https://orgmode.org/manual/Generating-an-index.html][Org-mode index entries]] using the ={i:...}= syntax used by Markua. The value given to =#+INDEX= will be passed as-is into the ={i:...}= attributes (including any formatting markup, which needs to be provided in Markua format), with one exception: for =see= and =seealso= entries, the format should be =see=otherentry= or =seealso=otherentry=, and it will be converted to the correct syntax on export. The value given to =#+INDEX= must not be enclosed in quotes, but the value passed to =see= or =seealso= may be enclosed in quotes. Separators such as ~!~ and ~|~ must be escaped with a backslash.
+
+| *Org-mode source*          | *Exported Markua*             |
+| =#+INDEX: "hello"=         | error                       |
+| =#+INDEX: hello=           | ={i: "hello"}=                |
+| =#+INDEX: Zamboni, Diego=  | ={i: "Zamboni, Diego"}=       |
+| =#+INDEX: Yahoo\!=         | ={i: "Yahoo\!"}=              |
+| =#+INDEX: *hello*=         | ={i: "*hello*"}=                |
+| =#+INDEX: **hello**=       | ={i: "**hello**"}=              |
+| =#+INDEX: hello!Diego=     | ={i: "hello!Diego"}=          |
+| =#+INDEX: hello!*Diego*=   | ={i: "hello!*Diego*"}=        |
+| =#+INDEX: hello!**Diego**= | ={i: "hello!**Diego**"}=      |
+| =#+INDEX: Diego¦see=hello= | ={i: "Diego¦see{i:'hello'}"}= |
 
 ** Calling from Emacs LISP
 
