@@ -96,6 +96,19 @@ correct value in your org file.")
 
 ;;; Utility functions
 
+(defun org-leanpub-book--outdir (info)
+  "Return the directory to write to. Guarantees that 'manuscript'
+is present in case the user defined outpath didn't have
+'manuscript' as its final folder name."
+
+  (let ((plist-outdir (plist-get info :leanpub-book-output-dir)))
+    (if (string-equal plist-outdir org-leanpub-book-manuscript-dir)
+        plist-outdir
+        (progn
+          (if  (string-match "/manuscript$" plist-outdir)
+              plist-outdir
+              (concat (file-name-as-directory plist-outdir) org-leanpub-book-manuscript-dir))))))
+
 (defun org-leanpub-book--outfile (outdir f)
   "Return relative output pathname.
 Concatenates `OUTDIR' with `F' using the correct separator, to
@@ -179,8 +192,7 @@ DO-SAMPLE-FILE, ONLY-SUBSET and SUBTREEP are as passed to
       ;; select the subtree so that its headline is also exported (otherwise we get just the body)
       (org-mark-subtree)
       (message "Exporting %s (%s)" final-filename title)
-      (funcall export-function nil t))))
-
+      (funcall export-function outdir nil t))))
 ;; Main export function
 (defun org-leanpub-book--export (export-function export-extension export-backend-symbol
                                                  &optional subtreep visible-only do-sample-file only-subset)
@@ -223,14 +235,18 @@ normally not be called directly by the user."
                  export-backend-symbol subtreep visible-only)
                 (org-export--get-buffer-attributes)
                 (org-export-get-environment export-backend-symbol subtreep)))
-         (outdir (plist-get info :leanpub-book-output-dir))
+         (outdir (org-leanpub-book--outdir info))
          (original-point (point)))
 
     ;; Create necessary directories and symlinks, if needed
-    (let* ((img-dir-rel-to-outdir (concat (file-name-as-directory org-leanpub-book-resources-dir)
+    (let* (
+           ; resources/images
+           (img-dir-rel-to-outdir (concat (file-name-as-directory org-leanpub-book-resources-dir)
                                           org-leanpub-book-images-dir))
+           ; <outdir>/resources/images
            (img-dir-rel-to-repo (concat (file-name-as-directory outdir)
                                         img-dir-rel-to-outdir))
+           ; <outdir>/images
            (img-symlink-in-outdir (concat (file-name-as-directory outdir) org-leanpub-book-images-dir))
            (images-readme-text "manuscript/resources/README file
 
@@ -251,8 +267,16 @@ error).")
       (make-directory img-dir-rel-to-repo t)
       (write-region images-readme-text nil images-readme-file)
 
-      (make-symbolic-link img-dir-rel-to-repo org-leanpub-book-images-dir t)
-      (make-symbolic-link img-dir-rel-to-outdir img-symlink-in-outdir t))
+      ; <outdir>/images -> resources/images
+      (make-symbolic-link img-dir-rel-to-outdir img-symlink-in-outdir t)
+
+      ; IF the user HAS NOT overridden the default output directory
+      ; symlink images -> manuscript/resources/images
+      ; Otherwise it'll cause problems if the user is exporting
+      ; multiple books from org files in teh same directory.
+      (if (string-equal outdir org-leanpub-book-manuscript-dir)
+            ; images -> <outdir>/resources/images
+            (make-symbolic-link img-dir-rel-to-repo org-leanpub-book-images-dir t)))
 
     ;; Initialization: delete all the book definition and *matter.txt
     ;; files, they get recreated as needed

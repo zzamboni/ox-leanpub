@@ -724,7 +724,7 @@ non-nil."
     async subtreep visible-only nil nil (lambda () (text-mode))))
 
 ;;;###autoload
-(defun org-leanpub-markua-export-to-markua (&optional async subtreep visible-only)
+(defun org-leanpub-markua-export-to-markua (&optional outdir async subtreep visible-only)
   "Export current buffer to a Leanpub compatible Markua file.
 
 If narrowing is active in the current buffer, only export its
@@ -745,7 +745,7 @@ contents of hidden elements.
 
 Return output file's name."
   (interactive)
-  (let ((outfile (org-export-output-file-name ".markua" subtreep)))
+  (let ((outfile (org-export-output-file-name ".markua" subtreep outdir)))
     (org-export-to-file 'leanpub-markua outfile async subtreep visible-only)))
 
 (provide 'ox-leanpub-markua)

@@ -394,7 +394,7 @@ non-nil."
     async subtreep visible-only nil nil (lambda () (text-mode))))
 
 ;;;###autoload
-(defun org-leanpub-markdown-export-to-markdown (&optional async subtreep visible-only)
+(defun org-leanpub-markdown-export-to-markdown (&optional outdir async subtreep visible-only)
   "Export current buffer to a Leanpub's compatible Markdown file.
 
 If narrowing is active in the current buffer, only export its
@@ -415,7 +415,7 @@ contents of hidden elements.
 
 Return output file's name."
   (interactive)
-  (let ((outfile (org-export-output-file-name ".md" subtreep)))
+  (let ((outfile (org-export-output-file-name ".md" subtreep outdir)))
     (org-export-to-file 'leanpub-markdown outfile async subtreep visible-only)))
 
 (provide 'ox-leanpub-markdown)

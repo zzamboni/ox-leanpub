@@ -24,6 +24,7 @@ If you want to see a real-world example of how to use it, you can find at https:
   - [[#in-doom-emacs][In Doom Emacs]]
   - [[#from-source][From source]]
 - [[#usage][Usage]]
+  - [[#book-export]["Book" Export]]
   - [[#special-heading-tags][Special heading tags]]
   - [[#attributes][Attributes]]
   - [[#block-elements][Block elements]]
@@ -123,11 +124,20 @@ Depending on whether you load the Markua or Markdown exporter, you will see the 
 
 The "buffer" and "file" options export the whole file to the corresponding format, but without any further structuring. You can use these if you want to convert a whole book for using with Leanpub's in-browser editor, for example.
 
+** "Book" Export
 The "Book" options do whole-book export in the structure required by Leanpub:
 - "Book: Whole book" exports the whole book as one-file-per-chapter;
 - "Book: Subset" exports only the chapters that should be included in =Subset.txt= (if any), according to the rules listed below, to be able to quickly preview them using [[http://help.leanpub.com/en/articles/3025574-i-only-want-to-do-preview-of-a-specific-part-of-my-book-how-do-i-so-a-subset-preview][LeanPub's subset-preview feature]];
   + The subset export can be temporarily restricted to the current chapter (regardless of the =#+LEANPUB_BOOK_WRITE_SUBSET= setting, see below) by pressing =C-s= in the Org Mode Export screen to set "Export scope" to "Subtree".
 
+*** Multiple books in one repo?
+Most of the time you'll have one book per repository. In this scenario the default behavior is to create a =manuscript= directory and export everything into there. /However/ if you're creating multiple books that share reference material or resources, you'll need multiple output directories. Set the =#+LEANPUB_BOOK_OUTPUT_DIR= in your file. It's best to point this to the root of a separate git repo which you'll likely upload to GitHub and point LeanPub at. For example, if your book is at =~/my_cool_book/cool_book.org= you might create =~/my_cool_book_export/= and add the following to the top of your org file.
+
+#+begin_src
+#+leanpub_book_output_dir: ~/my_cool_book_export/
+#+end_src
+
+*** Export Files
 The first time you do a Book export, the following directory and symlink structure will be created:
 
 #+begin_example
@@ -138,6 +148,7 @@ The first time you do a Book export, the following directory and symlink structu
       └── resources
           └── images
 #+end_example
+
 
 In short, this is what the Book export operation does:
 
@@ -159,6 +170,7 @@ The book files are created inside =manuscript= and populated as follows:
   - =sample=: use same chapters as =Sample.txt=.
   - =current=: export the current chapter (where the cursor is at the moment of the export) as the contents of =Subset.txt=. This can be set temporarily (for a single export) by pressing =C-s= in the Export screen to set "Export scope" to "Subtree".
 
+
 The exported chapter files are named as follows:
 1. If the heading has an =EXPORT_FILE_NAME= property, it is used, unless the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= file property is set.
   - Note: this filename should already specify the output directory and extension, e.g. =manuscript/chapter.markua=
@@ -166,6 +178,19 @@ The exported chapter files are named as follows:
 3. Otherwise, the filename is generated based on the heading title by lowercasing it and replacing all non-alphanumeric characters with hyphens. The resulting final filename is likewise stored in =EXPORT_FILE_NAME=.
 
 The last-used filename is stored in the =EXPORT_FILE_NAME= property of the corresponding heading. By default, once this property is set it is not modified on future exports. If you set the =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= attribute in your file, the =EXPORT_FILE_NAME= property will be updated every time the book is exported. This can be useful to keep the filenames in sync when you change the heading titles in your document, but be aware that the file exported with the old name will not be removed automatically.
+
+**** Caveats when you specify an output directory
+When you /do/ specify the =#+LEANPUB_BOOK_OUTPUT_DIR= the created structure will not include a top level symlink into =<LEANPUB_BOOK_OUTPUT_DIR>/resources/images= Instead it will look like this:
+
+#+begin_example
+  .
+  └── manuscript
+      ├── images -> resources/images
+      └── resources
+          └── images
+#+end_example
+
+The top level symlink is omitted because it is assumed that you'll be exporting multiple books from this directory and it would be problematic if the =images= symlink just pointed to whichever one you exported last.
 
 ** Special heading tags
 
