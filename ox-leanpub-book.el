@@ -202,11 +202,12 @@ The buffer is split by top level headlines, populating the
 corresponding book-specification files.
 
 EXPORT-FUNCTION is a regular Org exporter function, which must
-receives three optional arguments ASYNC (which is always passed
-as nil), SUBTREEP and VISIBLE-ONLY (which are passed unchanged
-from the corresponding arguments received). In particular, the
-SUBTREEP option must be obeyed for the current-chapter export to
-work. Files will be created with the extension EXPORT-EXTENSION.
+receives four optional arguments OUTDIR (value of
+LEANPUB_BOOK_OUTPUT_DIR), ASYNC (which is always passed as nil),
+SUBTREEP and VISIBLE-ONLY (which are passed unchanged from the
+corresponding arguments received). In particular, the SUBTREEP
+option must be obeyed for the current-chapter export to work.
+Files will be created with the extension EXPORT-EXTENSION.
 EXPORT-BACKEND-SYMBOL is the name (symbol) of the exporter to
 use.
 

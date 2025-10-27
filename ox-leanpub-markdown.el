@@ -402,6 +402,10 @@ narrowed part.
 
 If a region is active, export that region.
 
+OUTDIR is the directory where the files will be exported. When
+exporting a whole book it should be set to the value of
+LEANPUB_BOOK_OUTPUT_DIR.
+
 A non-nil optional argument ASYNC means the process should happen
 asynchronously.  The resulting file should be accessible through
 the `org-export-stack' interface.
