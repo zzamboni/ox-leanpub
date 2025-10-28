@@ -132,7 +132,7 @@ The "Book" options do whole-book export in the structure required by Leanpub:
 
 *** Multiple books in one repo?
 :PROPERTIES:
-:CUSTOM_ID: multiple-books-in-one-repo-
+:CUSTOM_ID: multiple-books-in-one-repo
 :END:
 Most of the time you'll have one book per repository. In this scenario the default behavior is to create a =manuscript= directory and export everything into there. /However/ if you're creating multiple books that share reference material or resources, you'll need multiple output directories. Set the =#+LEANPUB_BOOK_OUTPUT_DIR= in your file. It's best to point this to the root of a separate git repo which you'll likely upload to GitHub and point LeanPub at. For example, if your book is at =~/my_cool_book/cool_book.org= you might create =~/my_cool_book_export/= and add the following to the top of your org file.
 
@@ -379,7 +379,7 @@ The modules provide reasonable defaults, but you can configure some parameters b
 
 | *Keyword*                            | *Default value*    | *Description*                                                                                                                                                                                                                                                                               |
 | =#+LEANPUB_BOOK_ID_AS_FILENAME=      | =nil=              | If set (regardless of its value), use a heading's =NAME=, =CUSTOM_ID= or =ID= properties (if it has them) to construct the output filename, instead of always using the title.                                                                                                                  |
-| =#+LEANPUB_BOOK_OUTPUT_DIR=          | "manuscript"     | Subdirectory where the exported files will be created. See [[#multiple-books-in-one-repo-][Multiple books in one repo?]] and [[#caveats-when-you-specify-an-output-directory][Caveats when you specify an output directory]] if you use this.                                                                                                                                  |
+| =#+LEANPUB_BOOK_OUTPUT_DIR=          | "manuscript"     | Subdirectory where the exported files will be created. See [[#multiple-books-in-one-repo][Multiple books in one repo?]] and [[#caveats-when-you-specify-an-output-directory][Caveats when you specify an output directory]] if you use this.                                                                                                                                  |
 | =#+LEANPUB_BOOK_RECOMPUTE_FILENAMES= | =nil=              | If set (regardless of its value), update =EXPORT_FILE_NAME= for all headings on each export, based on the title. Note that if a chapter title has changed since the last export, it will be exported to a new filename, but the old file will not be deleted, you need to do this manually. |
 | =#+LEANPUB_BOOK_WRITE_SUBSET=        | "none"           | What to write to the =Subset.txt= file. Possible values: =none=, =tagged=, =all=, =sample=, =current=.                                                                                                                                                                                                |
 | =#+MARKUA_BLOCK=                     | =nil=              | Redefine or define a new block type. See [[#block-elements][Block Elements]] for the syntax details.                                                                                                                                                                                                           |
