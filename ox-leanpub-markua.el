@@ -70,6 +70,7 @@
                      (table-cell         . org-gfm-table-cell)
                      (table-row          . org-gfm-table-row)
                      (table              . org-leanpub-markua-table)
+                     (underline          . org-leanpub-markua-underline)
                      (export-block       . org-leanpub-markua-export-block)
                      (export-snippet     . org-leanpub-markua-export-snippet)
                      (superscript        . org-leanpub-markua-superscript)
@@ -399,6 +400,14 @@ contextual information."
 (defun org-leanpub-markua-plain-text (plain-text _info)
   "Return `PLAIN-TEXT' elements as-is."
   plain-text)
+
+(defun org-leanpub-markua-underline (_underline contents _info)
+  "Transcode an UNDERLINE object from Org to MARKUA.
+CONTENTS is the contents of the object. INFO is a plist holding
+contextual information. Please note that the actual output
+depends on Markua's 'Italicize Underlines' setting, see
+https://leanpub.com/markua/read#text-formatting"
+  (format "_%s_" contents))
 
 ;;; EOLs are removed from paragraphs in Markua
 
